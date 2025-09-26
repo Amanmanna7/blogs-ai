@@ -1,0 +1,207 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum UserRole {
+  USER
+  ADMIN
+  MODERATOR
+  EDITOR
+  AUTHOR
+}
+
+enum BlogStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum SubjectType {
+  ACADEMIC
+  TECHNICAL
+  CREATIVE
+  BUSINESS
+  OTHER
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT
+  OTHER
+}
+
+enum CourseStatus {
+  DRAFT
+  LIVE
+  ARCHIVED
+  COMING_SOON
+}
+
+// Core Models
+model User {
+  id                String         @id @default(cuid())
+  clerkUserId       String?        @unique @map("clerk_user_id")
+  email             String         @unique
+  name              String?
+  imageUrl          String?        @map("image_url")
+  role              UserRole       @default(USER)
+  createdAt         DateTime       @default(now()) @db.Timestamptz
+  updatedAt         DateTime       @updatedAt @db.Timestamptz
+  
+  // Relations
+  blogContents      BlogContent[]
+  blogs             Blog[]
+}
+
+model BlogContent {
+  id                String         @id @default(cuid())
+  name              String
+  slug              String         @unique
+  textContent       String         @map("text_content")
+  createdAt         DateTime       @default(now()) @db.Timestamptz
+  updatedAt         DateTime       @updatedAt @db.Timestamptz
+  
+  // Relations
+  createdBy         User           @relation(fields: [createdById], references: [id])
+  createdById       String         @map("created_by_id")
+  sequences         BlogSequence[]
+}
+
+model Blog {
+  id                              String         @id @default(cuid())
+  title                           String
+  slug                            String         @unique
+  tags                            String[]
+  publishedAt                     DateTime?      @map("published_at") @db.Timestamptz
+  status                          BlogStatus     @default(DRAFT)
+  meta                            Json           @default("{}")
+  createdAt                       DateTime       @default(now()) @db.Timestamptz
+  updatedAt                       DateTime       @updatedAt @db.Timestamptz
+  
+  // Relations
+  author                          User           @relation(fields: [authorId], references: [id])
+  authorId                        String         @map("author_id")
+  categories                      BlogCategory[]
+  sequences                       BlogSequence[]
+  chapterTopicRelations           ChapterTopicRelation[]
+}
+
+model BlogMedia {
+  id                String         @id @default(cuid())
+  name              String
+  slug              String         @unique
+  mediaType         MediaType      @map("media_type")
+  mediaUrl          String         @map("media_url")
+  description       String?
+  meta              Json           @default("{}")
+  createdAt         DateTime       @default(now()) @db.Timestamptz
+  updatedAt         DateTime       @updatedAt @db.Timestamptz
+  
+  // Relations
+  sequences         BlogSequence[]
+}
+
+model Category {
+  id                String         @id @default(cuid())
+  name              String         @unique
+  createdAt         DateTime       @default(now()) @db.Timestamptz
+  updatedAt         DateTime       @updatedAt @db.Timestamptz
+  
+  // Relations
+  blogs             BlogCategory[]
+}
+
+model Course {
+  id                String         @id @default(cuid())
+  name              String
+  description       String
+  subjectType       SubjectType    @map("subject_type")
+  status            CourseStatus   @default(DRAFT)
+  createdAt         DateTime       @default(now()) @db.Timestamptz
+  updatedAt         DateTime       @updatedAt @db.Timestamptz
+  
+  // Relations
+  chapterTopics     ChapterTopic[]
+}
+
+model ChapterTopic {
+  id                String         @id @default(cuid())
+  courseId          String         @map("course_id")
+  sequenceNumber    Int            @map("sequence_number")
+  name              String
+  description       String
+  createdAt         DateTime       @default(now()) @db.Timestamptz
+  updatedAt         DateTime       @updatedAt @db.Timestamptz
+  
+  // Relations
+  course            Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  blogRelations     ChapterTopicRelation[]
+  
+  // Constraints
+  @@unique([courseId, sequenceNumber])
+}
+
+// Junction table for Blog-Category many-to-many relationship
+model BlogCategory {
+  id                String         @id @default(cuid())
+  blogId            String         @map("blog_id")
+  categoryId        String         @map("category_id")
+  createdAt         DateTime       @default(now()) @db.Timestamptz
+  
+  // Relations
+  blog              Blog           @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  category          Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  
+  @@unique([blogId, categoryId])
+}
+
+// Junction table for ChapterTopic-Blog many-to-many relationship
+model ChapterTopicRelation {
+  id                String         @id @default(cuid())
+  chapterTopicId    String         @map("chapter_topic_id")
+  blogId            String         @map("blog_id")
+  sequence          Int            // Position/sequence number
+  createdAt         DateTime       @default(now()) @db.Timestamptz
+  
+  // Relations
+  chapterTopic      ChapterTopic   @relation(fields: [chapterTopicId], references: [id], onDelete: Cascade)
+  blog              Blog           @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  
+  // Constraints
+  @@unique([chapterTopicId, blogId])
+  @@unique([chapterTopicId, sequence])
+}
+
+// Unified table for Blog sequences (content and media)
+model BlogSequence {
+  id                String         @id @default(cuid())
+  blogId            String         @map("blog_id")
+  sequence          Int            // Position/sequence number
+  
+  // Either content OR media, but not both
+  blogContentId     String?        @map("blog_content_id")
+  blogMediaId       String?        @map("blog_media_id")
+  
+  createdAt         DateTime       @default(now()) @db.Timestamptz
+  
+  // Relations
+  blog              Blog           @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  blogContent       BlogContent?   @relation(fields: [blogContentId], references: [id], onDelete: Cascade)
+  blogMedia         BlogMedia?     @relation(fields: [blogMediaId], references: [id], onDelete: Cascade)
+  
+  // Constraints
+  @@unique([blogId, sequence])
+  @@index([blogId, blogContentId])
+  @@index([blogId, blogMediaId])
+}

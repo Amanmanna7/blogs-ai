@@ -1,26 +1,170 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Base styles */
+body {
+  background-color: #ffffff;
+  color: #171717;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Landing page animations */
+@keyframes gradientShift {
+  0%, 100% { 
+    background-position: 0% 50%; 
+  }
+  50% { 
+    background-position: 100% 50%; 
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes borderGlow {
+  0% { 
+    transform: rotate(0deg); 
+  }
+  100% { 
+    transform: rotate(360deg); 
+  }
+}
+
+@keyframes backgroundFloat {
+  0%, 100% { 
+    background-position: 
+      0 0,
+      0 0,
+      100px 100px,
+      200px 200px,
+      50px 50px,
+      0 0,
+      0 0,
+      0 0;
+  }
+  25% { 
+    background-position: 
+      0 0,
+      50px 50px,
+      150px 150px,
+      250px 250px,
+      100px 100px,
+      0 0,
+      0 0,
+      0 0;
+  }
+  50% { 
+    background-position: 
+      0 0,
+      100px 100px,
+      200px 200px,
+      300px 300px,
+      150px 150px,
+      0 0,
+      0 0,
+      0 0;
+  }
+  75% { 
+    background-position: 
+      0 0,
+      150px 150px,
+      250px 250px,
+      350px 350px,
+      200px 200px,
+      0 0,
+      0 0,
+      0 0;
+  }
+}
+
+/* Enhanced subtle background with theme colors */
+.landing-bg {
+  background: 
+    /* Animated gradient overlay */
+    linear-gradient(135deg, rgba(59, 130, 246, 0.02) 0%, rgba(147, 51, 234, 0.02) 50%, rgba(99, 102, 241, 0.02) 100%),
+    /* Floating orbs */
+    radial-gradient(circle at 15% 25%, rgba(59, 130, 246, 0.08) 0%, transparent 25%),
+    radial-gradient(circle at 85% 15%, rgba(147, 51, 234, 0.06) 0%, transparent 30%),
+    radial-gradient(circle at 25% 75%, rgba(99, 102, 241, 0.05) 0%, transparent 35%),
+    radial-gradient(circle at 75% 85%, rgba(59, 130, 246, 0.04) 0%, transparent 40%),
+    /* Subtle grid pattern */
+    linear-gradient(rgba(59, 130, 246, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(147, 51, 234, 0.02) 1px, transparent 1px),
+    /* Base gradient */
+    linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+  background-size: 
+    100% 100%,
+    400px 400px,
+    350px 350px,
+    300px 300px,
+    250px 250px,
+    60px 60px,
+    60px 60px,
+    100% 100%;
+  background-position: 
+    0 0,
+    0 0,
+    100px 100px,
+    200px 200px,
+    50px 50px,
+    0 0,
+    0 0,
+    0 0;
+  animation: backgroundFloat 20s ease-in-out infinite;
+}
+
+/* AI-themed floating elements */
+.ai-neural-network {
+  background-image: 
+    radial-gradient(circle at 15% 25%, rgba(59, 130, 246, 0.1) 3px, transparent 3px),
+    radial-gradient(circle at 85% 15%, rgba(139, 92, 246, 0.08) 2px, transparent 2px),
+    radial-gradient(circle at 25% 75%, rgba(16, 185, 129, 0.06) 2.5px, transparent 2.5px),
+    radial-gradient(circle at 75% 85%, rgba(245, 158, 11, 0.05) 2px, transparent 2px);
+  background-size: 150px 150px, 200px 200px, 180px 180px, 160px 160px;
+  background-position: 0 0, 50px 50px, 100px 100px, 25px 25px;
+}
+
+/* Tech grid pattern */
+.tech-grid {
+  background-image: 
+    linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* Floating particles effect */
+.floating-particles::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+    radial-gradient(circle at 80% 70%, rgba(147, 51, 234, 0.08) 1px, transparent 1px),
+    radial-gradient(circle at 40% 60%, rgba(99, 102, 241, 0.06) 1px, transparent 1px),
+    radial-gradient(circle at 60% 20%, rgba(59, 130, 246, 0.05) 1px, transparent 1px),
+    radial-gradient(circle at 90% 40%, rgba(147, 51, 234, 0.04) 1px, transparent 1px);
+  background-size: 200px 200px, 300px 300px, 250px 250px, 180px 180px, 220px 220px;
+  background-position: 0 0, 100px 100px, 50px 50px, 150px 150px, 200px 200px;
+  animation: particleFloat 25s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes particleFloat {
+  0% { 
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.3;
+  }
+  50% { 
+    transform: translateY(-20px) translateX(10px);
+    opacity: 0.6;
+  }
+  100% { 
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.3;
+  }
+}
+
+/* Radial gradient utility */
+.bg-gradient-radial {
+  background: radial-gradient(circle, var(--tw-gradient-stops));
 }
