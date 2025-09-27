@@ -49,8 +49,7 @@ export default function BlogPreview({
     .sort((a, b) => a.sequence - b.sequence);
 
   return (
-    <div className="p-6">
-      
+    <div className="p-1 lg:p-6">      
       <div className="prose max-w-none">
         {/* Blog Title */}
         <h1 className="text-3xl font-bold text-gray-900 mb-4">
