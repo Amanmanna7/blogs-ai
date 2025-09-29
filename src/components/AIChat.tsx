@@ -17,6 +17,9 @@ interface AIChatProps {
   blogTitle?: string;
   isChatOpen?: boolean;
   onChatToggle?: (isOpen: boolean) => void;
+  blogId?: string;
+  courseId?: string;
+  chapterTopicId?: string;
 }
 
 // Code Block Component with Copy Functionality
@@ -71,7 +74,10 @@ export default function AIChat({
   className = "",
   blogTitle = "this content",
   isChatOpen = false,
-  onChatToggle
+  onChatToggle,
+  blogId,
+  courseId,
+  chapterTopicId
 }: AIChatProps) {
   const { isSignedIn } = useUser();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -79,12 +85,29 @@ export default function AIChat({
   const [isLoading, setIsLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true); // Auto-expand by default
   const [showFeatures, setShowFeatures] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [isFirstMessage, setIsFirstMessage] = useState(true);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [isLoadingOlderMessages, setIsLoadingOlderMessages] = useState(false);
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
+  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
+  const [lastAIMessageId, setLastAIMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesStartRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Add welcome message when chat is opened
+  // Load chat history when chat opens
   useEffect(() => {
-    if (isSignedIn && isChatOpen && messages.length === 0) {
+    if (isSignedIn && isChatOpen) {
+      loadChatHistory();
+    }
+  }, [isSignedIn, isChatOpen, blogId, courseId, chapterTopicId]);
+
+  // Add welcome message if no history is found
+  useEffect(() => {
+    if (isSignedIn && isChatOpen && messages.length === 0 && !isLoadingHistory) {
       const welcomeMessage: Message = {
         id: 'welcome',
         role: 'assistant',
@@ -93,7 +116,7 @@ export default function AIChat({
       };
       setMessages([welcomeMessage]);
     }
-  }, [isSignedIn, isChatOpen, blogTitle, messages.length]);
+  }, [isSignedIn, isChatOpen, blogTitle, messages.length, isLoadingHistory]);
 
   // Focus input when chat opens
   useEffect(() => {
@@ -106,12 +129,51 @@ export default function AIChat({
   }, [isChatOpen]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const scrollToShowAIMessage = () => {
+    if (messagesContainerRef.current) {
+      const container = messagesContainerRef.current;
+      
+      // Find the last AI message in the DOM
+      const aiMessages = container.querySelectorAll('[data-role="assistant"]');
+      if (aiMessages.length > 0) {
+        const lastAIMessage = aiMessages[aiMessages.length - 1] as HTMLElement;
+        const messageTop = lastAIMessage.offsetTop - container.offsetTop;
+        
+        // Scroll to show the AI message at the top of the visible area with smooth behavior
+        container.scrollTo({
+          top: messageTop,
+          behavior: 'smooth'
+        });
+      }
+    }
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    // Only auto-scroll when not loading history and we have messages
+    if (!isLoadingHistory && messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      
+      // Only scroll if user is not actively scrolling up
+      if (!isUserScrolling) {
+        if (lastMessage.role === 'user') {
+          // For user messages, scroll to bottom
+          setTimeout(() => scrollToBottom(), 50);
+        } else if (lastMessage.role === 'assistant' && lastMessage.id !== lastAIMessageId && hasInitiallyLoaded) {
+          // For NEW AI responses only during active chat, scroll to show the beginning of the response
+          setTimeout(() => scrollToShowAIMessage(), 100);
+          setLastAIMessageId(lastMessage.id);
+        }
+      }
+    }
+  }, [messages, isLoadingHistory, isUserScrolling, lastAIMessageId, hasInitiallyLoaded]);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -143,7 +205,12 @@ export default function AIChat({
             role: msg.role,
             content: msg.content
           })),
-          systemPrompt: prompt
+          systemPrompt: prompt,
+          sessionId: sessionId,
+          blogId: blogId,
+          courseId: courseId,
+          chapterTopicId: chapterTopicId,
+          isFirstMessage: isFirstMessage
         }),
       });
 
@@ -152,6 +219,12 @@ export default function AIChat({
       }
 
       const data = await response.json();
+      
+      // Update session state if this was the first message
+      if (isFirstMessage && data.sessionId) {
+        setSessionId(data.sessionId);
+        setIsFirstMessage(false);
+      }
       
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -185,6 +258,111 @@ export default function AIChat({
   const clearChat = () => {
     setMessages([]);
     setInput('');
+    setSessionId(null);
+    setIsFirstMessage(true);
+    setHasMoreMessages(true);
+    setIsUserScrolling(false);
+    setHasInitiallyLoaded(false);
+    setLastAIMessageId(null);
+  };
+
+  // Load chat history when chat opens
+  const loadChatHistory = async () => {
+    if (!isSignedIn || !isChatOpen || isLoadingHistory) return;
+
+    setIsLoadingHistory(true);
+    try {
+      const params = new URLSearchParams();
+      if (blogId) params.append('blogId', blogId);
+      if (courseId) params.append('courseId', courseId);
+      if (chapterTopicId) params.append('chapterTopicId', chapterTopicId);
+
+      const response = await fetch(`/api/chat-sessions/last?${params}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.session) {
+          setSessionId(data.session.id);
+          setIsFirstMessage(false);
+          
+          // Convert database messages to component format
+          const historyMessages: Message[] = data.messages.map((msg: any) => ({
+            id: msg.id,
+            role: msg.sender === 'USER' ? 'user' : 'assistant',
+            content: msg.message,
+            timestamp: new Date(msg.createdAt)
+          }));
+
+          setMessages(historyMessages);
+          setHasInitiallyLoaded(true);
+          
+          // Set the last AI message ID to prevent scroll behavior on initial load
+          if (historyMessages.length > 0) {
+            const lastMessage = historyMessages[historyMessages.length - 1];
+            if (lastMessage.role === 'assistant') {
+              setLastAIMessageId(lastMessage.id);
+            }
+          }
+          
+          // Scroll to bottom on initial load
+          setTimeout(() => scrollToBottom(), 50);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading chat history:', error);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  // Load older messages when scrolling to top
+  const loadOlderMessages = async () => {
+    if (!sessionId || isLoadingOlderMessages || !hasMoreMessages) return;
+
+    setIsLoadingOlderMessages(true);
+    try {
+      const params = new URLSearchParams({
+        sessionId,
+        limit: '20',
+        offset: messages.length.toString()
+      });
+
+      const response = await fetch(`/api/chat-history?${params}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.messages.length > 0) {
+          // Convert database messages to component format
+          const olderMessages: Message[] = data.messages.map((msg: any) => ({
+            id: msg.id,
+            role: msg.sender === 'USER' ? 'user' : 'assistant',
+            content: msg.message,
+            timestamp: new Date(msg.createdAt)
+          }));
+
+          setMessages(prev => [...olderMessages, ...prev]);
+          setHasMoreMessages(data.hasMore);
+        } else {
+          setHasMoreMessages(false);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading older messages:', error);
+    } finally {
+      setIsLoadingOlderMessages(false);
+    }
+  };
+
+  // Handle scroll to top for loading older messages
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    
+    // Check if user is scrolling up (not at bottom)
+    const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10; // 10px tolerance
+    setIsUserScrolling(!isAtBottom);
+    
+    // Load older messages when scrolling to top
+    if (scrollTop === 0 && hasMoreMessages && !isLoadingOlderMessages) {
+      loadOlderMessages();
+    }
   };
 
   const handleBeginLearning = () => {
@@ -372,17 +550,6 @@ export default function AIChat({
             {messages.length > 0 ? `${messages.length} message${messages.length !== 1 ? 's' : ''}` : 'Ready to help with your learning'}
           </p>
           <div className="flex items-center gap-3">
-            {messages.length > 0 && (
-              <button
-                onClick={clearChat}
-                className="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50"
-                title="Clear chat"
-              >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
-            )}
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-green-400 animate-pulse"></div>
               <span className="text-xs text-gray-500">Active</span>
@@ -394,8 +561,39 @@ export default function AIChat({
       {/* Chat Area */}
       <div className="border-t border-gray-200 flex flex-col flex-1 min-h-0">
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
-          {messages.length === 0 ? (
+        <div 
+          ref={messagesContainerRef}
+          className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 scroll-smooth"
+          onScroll={handleScroll}
+        >
+          {/* Loading older messages indicator */}
+          {isLoadingOlderMessages && (
+            <div className="flex justify-center py-2">
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="h-4 w-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                Loading older messages...
+              </div>
+            </div>
+          )}
+
+          {/* Loading history indicator */}
+          {isLoadingHistory && (
+            <div className="flex justify-center py-8">
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="h-4 w-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                Loading chat history...
+              </div>
+            </div>
+          )}
+
+          {/* No more messages indicator */}
+          {!hasMoreMessages && messages.length > 0 && (
+            <div className="flex justify-center py-2">
+              <div className="text-xs text-gray-400">No more messages</div>
+            </div>
+          )}
+
+          {messages.length === 0 && !isLoadingHistory ? (
             <div className="text-center py-8">
               <div className="h-12 w-12 mx-auto mb-4 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 flex items-center justify-center">
                 <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -405,9 +603,12 @@ export default function AIChat({
               <p className="text-gray-500 text-sm">Start a conversation with AI</p>
             </div>
           ) : (
-            messages.map((message) => (
+            <>
+              <div ref={messagesStartRef} />
+              {messages.map((message) => (
               <div
                 key={message.id}
+                data-role={message.role}
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
@@ -451,7 +652,8 @@ export default function AIChat({
                   </p>
                 </div>
               </div>
-            ))
+              ))}
+            </>
           )}
           {isLoading && (
             <div className="flex justify-start">

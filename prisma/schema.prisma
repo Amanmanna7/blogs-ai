@@ -48,6 +48,17 @@ enum CourseStatus {
   COMING_SOON
 }
 
+enum ChatSender {
+  USER
+  AI
+}
+
+enum SessionStatus {
+  ACTIVE
+  ARCHIVED
+  DELETED
+}
+
 // Core Models
 model User {
   id                String         @id @default(cuid())
@@ -62,6 +73,7 @@ model User {
   // Relations
   blogContents      BlogContent[]
   blogs             Blog[]
+  chatSessions      ChatSession[]
 }
 
 model BlogContent {
@@ -95,6 +107,7 @@ model Blog {
   categories                      BlogCategory[]
   sequences                       BlogSequence[]
   chapterTopicRelations           ChapterTopicRelation[]
+  chatSessions                    ChatSession[]
 }
 
 model BlogMedia {
@@ -133,6 +146,7 @@ model Course {
   
   // Relations
   chapterTopics     ChapterTopic[]
+  chatSessions      ChatSession[]
 }
 
 model ChapterTopic {
@@ -147,6 +161,7 @@ model ChapterTopic {
   // Relations
   course            Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
   blogRelations     ChapterTopicRelation[]
+  chatSessions      ChatSession[]
   
   // Constraints
   @@unique([courseId, sequenceNumber])
@@ -204,4 +219,45 @@ model BlogSequence {
   @@unique([blogId, sequence])
   @@index([blogId, blogContentId])
   @@index([blogId, blogMediaId])
+}
+
+// Chat Models
+model ChatSession {
+  id                String         @id @default(cuid())
+  userId            String         @map("user_id")
+  sessionName       String?        @map("session_name")
+  blogId            String?        @map("blog_id")
+  courseId          String?        @map("course_id")
+  chapterTopicId    String?        @map("chapter_topic_id")
+  status            SessionStatus  @default(ACTIVE)
+  createdAt         DateTime       @default(now()) @db.Timestamptz
+  updatedAt         DateTime       @updatedAt @db.Timestamptz
+  
+  // Relations
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  blog              Blog?          @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  course            Course?        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  chapterTopic      ChapterTopic?  @relation(fields: [chapterTopicId], references: [id], onDelete: Cascade)
+  messages          ChatMessage[]
+  
+  // Indexes
+  @@index([userId])
+  @@index([blogId])
+  @@index([courseId])
+  @@index([chapterTopicId])
+}
+
+model ChatMessage {
+  id                String         @id @default(cuid())
+  sessionId         String         @map("session_id")
+  message           String
+  sender            ChatSender
+  createdAt         DateTime       @default(now()) @db.Timestamptz
+  
+  // Relations
+  session           ChatSession    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  // Indexes
+  @@index([sessionId])
+  @@index([createdAt])
 }

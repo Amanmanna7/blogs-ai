@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { auth } from '@clerk/nextjs/server';
+import { prisma } from '@/lib/prisma';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -7,13 +9,89 @@ const openai = new OpenAI({
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages, systemPrompt } = await request.json();
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { 
+      messages, 
+      systemPrompt, 
+      sessionId, 
+      blogId, 
+      courseId, 
+      chapterTopicId,
+      isFirstMessage = false 
+    } = await request.json();
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json(
         { error: 'Messages array is required' },
         { status: 400 }
       );
+    }
+
+    let currentSessionId = sessionId;
+
+    // Create session if this is the first message and no sessionId provided
+    if (isFirstMessage && !sessionId) {
+      // First, ensure the user exists in our database
+      let dbUser = await prisma.user.findUnique({
+        where: { clerkUserId: userId }
+      });
+
+      if (!dbUser) {
+        // User doesn't exist, we need to create them
+        // This should normally be handled by the user sync, but let's handle it here as a fallback
+        try {
+          // Get user data from Clerk
+          const clerkUser = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
+            headers: {
+              'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (clerkUser.ok) {
+            const clerkUserData = await clerkUser.json();
+            const email = clerkUserData.email_addresses?.[0]?.email_address;
+            const name = `${clerkUserData.first_name || ''} ${clerkUserData.last_name || ''}`.trim() || null;
+            const imageUrl = clerkUserData.image_url;
+
+            if (email) {
+              dbUser = await prisma.user.create({
+                data: {
+                  clerkUserId: userId,
+                  email,
+                  name,
+                  imageUrl,
+                }
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Error creating user:', error);
+        }
+
+        if (!dbUser) {
+          return NextResponse.json(
+            { error: 'User not found. Please refresh the page and try again.' },
+            { status: 404 }
+          );
+        }
+      }
+
+      const newSession = await prisma.chatSession.create({
+        data: {
+          userId: dbUser.id, // Use the database user ID, not Clerk userId
+          blogId: blogId || null,
+          courseId: courseId || null,
+          chapterTopicId: chapterTopicId || null,
+          status: 'ACTIVE'
+        }
+      });
+      currentSessionId = newSession.id;
     }
 
     // Prepare messages for OpenAI
@@ -53,9 +131,45 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Store messages in database if sessionId is provided
+    if (currentSessionId) {
+      try {
+        // Get the last user message
+        const lastUserMessage = messages[messages.length - 1];
+        
+        // Store user message
+        await prisma.chatMessage.create({
+          data: {
+            sessionId: currentSessionId,
+            message: lastUserMessage.content,
+            sender: 'USER'
+          }
+        });
+
+        // Store AI response
+        await prisma.chatMessage.create({
+          data: {
+            sessionId: currentSessionId,
+            message: response.trim(),
+            sender: 'AI'
+          }
+        });
+
+        // Update session timestamp
+        await prisma.chatSession.update({
+          where: { id: currentSessionId },
+          data: { updatedAt: new Date() }
+        });
+      } catch (dbError) {
+        console.error('Error storing messages:', dbError);
+        // Continue with response even if DB storage fails
+      }
+    }
+
     return NextResponse.json({ 
       success: true, 
-      response: response.trim() 
+      response: response.trim(),
+      sessionId: currentSessionId
     });
 
   } catch (error) {
