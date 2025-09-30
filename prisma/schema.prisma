@@ -74,6 +74,9 @@ model User {
   blogContents      BlogContent[]
   blogs             Blog[]
   chatSessions      ChatSession[]
+  blogProgress      BlogProgress[]
+  chapterProgress   ChapterProgress[]
+  courseProgress    CourseProgress[]
 }
 
 model BlogContent {
@@ -108,6 +111,7 @@ model Blog {
   sequences                       BlogSequence[]
   chapterTopicRelations           ChapterTopicRelation[]
   chatSessions                    ChatSession[]
+  blogProgress                    BlogProgress[]
 }
 
 model BlogMedia {
@@ -147,6 +151,7 @@ model Course {
   // Relations
   chapterTopics     ChapterTopic[]
   chatSessions      ChatSession[]
+  courseProgress    CourseProgress[]
 }
 
 model ChapterTopic {
@@ -162,6 +167,8 @@ model ChapterTopic {
   course            Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
   blogRelations     ChapterTopicRelation[]
   chatSessions      ChatSession[]
+  blogProgress      BlogProgress[]
+  chapterProgress   ChapterProgress[]
   
   // Constraints
   @@unique([courseId, sequenceNumber])
@@ -260,4 +267,67 @@ model ChatMessage {
   // Indexes
   @@index([sessionId])
   @@index([createdAt])
+}
+
+// Progress Tracking Models
+model BlogProgress {
+  id                String         @id @default(cuid())
+  blogId            String         @map("blog_id")
+  chapterId         String         @map("chapter_id")
+  userId            String         @map("user_id")
+  status            String         @default("started") // "started", "completed"
+  completedAt       DateTime?      @map("completed_at") @db.Timestamptz
+  createdAt         DateTime       @default(now()) @db.Timestamptz
+  updatedAt         DateTime       @updatedAt @db.Timestamptz
+  
+  // Relations
+  blog              Blog           @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  chapterTopic      ChapterTopic   @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapterProgress   ChapterProgress @relation(fields: [chapterId, userId], references: [chapterId, userId])
+  
+  // Constraints
+  @@unique([userId, blogId])
+  @@index([chapterId])
+  @@index([userId])
+  @@index([status])
+}
+
+model ChapterProgress {
+  id                String         @id @default(cuid())
+  chapterId         String         @map("chapter_id")
+  userId            String         @map("user_id")
+  status            String         @default("started") // "started", "completed"
+  completedAt       DateTime?      @map("completed_at") @db.Timestamptz
+  createdAt         DateTime       @default(now()) @db.Timestamptz
+  updatedAt         DateTime       @updatedAt @db.Timestamptz
+  
+  // Relations
+  chapterTopic      ChapterTopic   @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  blogProgress      BlogProgress[]
+  
+  // Constraints
+  @@unique([userId, chapterId])
+  @@index([userId])
+  @@index([status])
+}
+
+model CourseProgress {
+  id                String         @id @default(cuid())
+  courseId          String         @map("course_id")
+  userId            String         @map("user_id")
+  status            String         @default("started") // "started", "completed"
+  completedAt       DateTime?      @map("completed_at") @db.Timestamptz
+  createdAt         DateTime       @default(now()) @db.Timestamptz
+  updatedAt         DateTime       @updatedAt @db.Timestamptz
+  
+  // Relations
+  course            Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Constraints
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([status])
 }

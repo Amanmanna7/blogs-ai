@@ -25,6 +25,27 @@ interface Course {
       sequence: number;
     }[];
   }[];
+  progress?: {
+    completedBlogs: number;
+    totalBlogs: number;
+    progressPercentage: number;
+    chapters: Array<{
+      id: string;
+      name: string;
+      sequenceNumber: number;
+      progress?: {
+        status: string;
+        completedAt?: Date;
+      } | null;
+      completedBlogs: number;
+      totalBlogs: number;
+      blogProgress: Array<{
+        blogId: string;
+        status: string;
+        completedAt?: Date;
+      }>;
+    }>;
+  };
 }
 
 interface ApiResponse {
@@ -48,6 +69,28 @@ export default function CourseDetailPage() {
         const data: ApiResponse = await response.json();
         
         if (data.success) {
+          // Fetch progress data
+          try {
+            const progressResponse = await fetch(`/api/progress?courseId=${courseId}`);
+            if (progressResponse.ok) {
+              const progressData = await progressResponse.json();
+              if (progressData.success) {
+                setCourse({
+                  ...data.data,
+                  progress: {
+                    completedBlogs: progressData.data.completedBlogs,
+                    totalBlogs: progressData.data.totalBlogs,
+                    progressPercentage: progressData.data.progressPercentage,
+                    chapters: progressData.data.chapters
+                  }
+                });
+                return;
+              }
+            }
+          } catch (progressError) {
+            console.error('Failed to fetch progress:', progressError);
+          }
+          
           setCourse(data.data);
         } else {
           setError(data.error || 'Failed to fetch course');
@@ -123,6 +166,7 @@ export default function CourseDetailPage() {
           <CourseHeader course={course} />
         </div>
 
+
         {/* Chapter Topics Section */}
         <div className="max-w-4xl mx-auto">
           <div className="mb-8 text-center">
@@ -149,6 +193,10 @@ export default function CourseDetailPage() {
                     chapterTopic={chapterTopic} 
                     isOpen={true} // All accordions open by default
                     subjectType={course.subjectType}
+                    progress={course.progress?.chapters.find(c => c.id === chapterTopic.id)?.progress}
+                    completedBlogs={course.progress?.chapters.find(c => c.id === chapterTopic.id)?.completedBlogs || 0}
+                    totalBlogs={course.progress?.chapters.find(c => c.id === chapterTopic.id)?.totalBlogs || 0}
+                    blogProgress={course.progress?.chapters.find(c => c.id === chapterTopic.id)?.blogProgress || []}
                   />
                 </div>
               ))}

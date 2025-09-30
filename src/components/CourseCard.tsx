@@ -11,6 +11,11 @@ interface CourseCardProps {
     subjectType: 'ACADEMIC' | 'TECHNICAL' | 'CREATIVE' | 'BUSINESS' | 'OTHER';
     chapterTopicCount: number;
     createdAt: string;
+    progress?: {
+      completedBlogs: number;
+      totalBlogs: number;
+      progressPercentage: number;
+    };
   };
   index: number;
 }
@@ -106,6 +111,30 @@ export default function CourseCard({ course, index }: CourseCardProps) {
         <p className="mb-6 text-gray-600 line-clamp-3 leading-relaxed">
           {course.description}
         </p>
+
+        {/* Progress Display */}
+        {course.progress && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-gray-700">Progress</span>
+              <span className="text-sm text-gray-600">
+                {course.progress.completedBlogs}/{course.progress.totalBlogs} Lesson{course.progress.totalBlogs !== 1 ? 's' : ''}
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${course.progress.progressPercentage}%` }}
+              ></div>
+            </div>
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>{course.progress.progressPercentage}% Complete</span>
+              {course.progress.progressPercentage === 100 && (
+                <span className="text-green-600 font-medium">✓ Completed</span>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Action Button */}
         <div className="flex items-center justify-between">

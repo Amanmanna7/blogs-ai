@@ -14,6 +14,11 @@ interface CourseHeaderProps {
         slug: string;
       }[];
     }[];
+    progress?: {
+      completedBlogs: number;
+      totalBlogs: number;
+      progressPercentage: number;
+    };
   };
 }
 
@@ -135,6 +140,63 @@ export default function CourseHeader({ course }: CourseHeaderProps) {
             {course.description}
           </p>
         </div>
+
+        {/* Progress Display */}
+        {course.progress && (
+          <div className="mt-6 p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-2">
+                <div className="h-8 w-8 bg-white/20 rounded-full flex items-center justify-center">
+                  <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-white">Your Progress</h4>
+                  <p className="text-xs text-blue-100">
+                    {course.progress.completedBlogs}/{course.progress.totalBlogs} Lesson{course.progress.totalBlogs !== 1 ? 's' : ''} Completed
+                  </p>
+                </div>
+              </div>
+              {course.progress.progressPercentage === 100 && (
+                <div className="flex items-center space-x-1 text-green-300">
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-xs font-medium">Completed!</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="w-full bg-white/20 rounded-full h-3 mb-2">
+              <div 
+                className={`h-3 rounded-full transition-all duration-500 ${
+                  course.progress.progressPercentage === 100 
+                    ? 'bg-gradient-to-r from-green-400 to-green-500' 
+                    : 'bg-gradient-to-r from-blue-400 to-blue-500'
+                }`}
+                style={{ width: `${course.progress.progressPercentage}%` }}
+              ></div>
+            </div>
+            
+            <div className="flex justify-between items-center">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-semibold text-white">
+                  {course.progress.progressPercentage}%
+                </span>
+                <span className="text-xs text-blue-100">Complete</span>
+              </div>
+              {course.progress.progressPercentage > 0 && course.progress.progressPercentage < 100 && (
+                <div className="flex items-center space-x-1 text-blue-200">
+                  <svg className="h-3 w-3 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-xs font-medium">In Progress</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="mt-8 flex flex-col sm:flex-row gap-4">

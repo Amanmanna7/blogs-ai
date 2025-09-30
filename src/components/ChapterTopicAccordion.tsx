@@ -19,6 +19,17 @@ interface ChapterTopicAccordionProps {
   };
   isOpen?: boolean;
   subjectType?: 'ACADEMIC' | 'TECHNICAL' | 'CREATIVE' | 'BUSINESS' | 'OTHER';
+  progress?: {
+    status: string;
+    completedAt?: Date;
+  } | null;
+  completedBlogs?: number;
+  totalBlogs?: number;
+  blogProgress?: Array<{
+    blogId: string;
+    status: string;
+    completedAt?: Date;
+  }>;
 }
 
 const subjectTypeColors = {
@@ -47,7 +58,11 @@ const subjectTypeColors = {
 export default function ChapterTopicAccordion({ 
   chapterTopic, 
   isOpen = true,
-  subjectType = 'OTHER'
+  subjectType = 'OTHER',
+  progress,
+  completedBlogs = 0,
+  totalBlogs = 0,
+  blogProgress = []
 }: ChapterTopicAccordionProps) {
   const [isExpanded, setIsExpanded] = useState(isOpen);
   const colors = subjectTypeColors[subjectType];
@@ -71,9 +86,29 @@ export default function ChapterTopicAccordion({
               <h3 className="text-xl font-bold text-gray-900 mb-1">
                 {chapterTopic.name}
               </h3>
-              <p className="text-gray-600 text-sm">
-                {chapterTopic.blogs.length} lesson{chapterTopic.blogs.length !== 1 ? 's' : ''}
-              </p>
+              <div className="flex items-center space-x-4">
+                <p className="text-gray-600 text-sm">
+                  {chapterTopic.blogs.length} lesson{chapterTopic.blogs.length !== 1 ? 's' : ''}
+                </p>
+                {totalBlogs > 0 && (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-600">
+                      {completedBlogs}/{totalBlogs} completed
+                    </span>
+                    {progress?.status === 'completed' && (
+                      <span className="text-green-600 text-sm font-medium">✓</span>
+                    )}
+                  </div>
+                )}
+              </div>
+              {totalBlogs > 0 && (
+                <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                  <div 
+                    className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                    style={{ width: `${totalBlogs > 0 ? (completedBlogs / totalBlogs) * 100 : 0}%` }}
+                  ></div>
+                </div>
+              )}
             </div>
           </div>
           
@@ -122,44 +157,72 @@ export default function ChapterTopicAccordion({
                 Lessons in this chapter
               </h4>
               
-              {chapterTopic.blogs.map((blog, index) => (
-                <Link
-                  key={blog.id}
-                  href={`/blogs/${blog.slug}?chapter=${chapterTopic.id}`}
-                  className="group block p-4 rounded-lg border border-gray-200 bg-white hover:bg-blue-50 hover:border-blue-300 transition-all duration-300 hover:shadow-md"
-                >
-                  <div className="flex items-center space-x-4">
-                    {/* Lesson Number */}
-                    <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gray-100 group-hover:bg-blue-100 flex items-center justify-center text-sm font-medium text-gray-600 group-hover:text-blue-600 transition-colors">
-                      {index + 1}
+              {chapterTopic.blogs.map((blog, index) => {
+                const blogProgressItem = blogProgress.find(bp => bp.blogId === blog.id);
+                const isCompleted = blogProgressItem?.status === 'completed';
+                
+                return (
+                  <Link
+                    key={blog.id}
+                    href={`/blogs/${blog.slug}?chapter=${chapterTopic.id}`}
+                    className={`group block p-4 rounded-lg border transition-all duration-300 hover:shadow-md ${
+                      isCompleted 
+                        ? 'border-green-200 bg-green-50 hover:bg-green-100' 
+                        : 'border-gray-200 bg-white hover:bg-blue-50 hover:border-blue-300'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-4">
+                      {/* Lesson Number */}
+                      <div className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
+                        isCompleted
+                          ? 'bg-green-100 text-green-600 group-hover:bg-green-200'
+                          : 'bg-gray-100 group-hover:bg-blue-100 text-gray-600 group-hover:text-blue-600'
+                      }`}>
+                        {isCompleted ? '✓' : index + 1}
+                      </div>
+                      
+                      {/* Lesson Info */}
+                      <div className="flex-1 min-w-0">
+                        <h5 className={`text-lg font-medium transition-colors ${
+                          isCompleted
+                            ? 'text-green-900 group-hover:text-green-700'
+                            : 'text-gray-900 group-hover:text-blue-700'
+                        }`}>
+                          {blog.title}
+                        </h5>
+                        <div className="flex items-center space-x-4 mt-1">
+                          {blog.publishedAt && (
+                            <p className="text-sm text-gray-500">
+                              Published: {new Date(blog.publishedAt).toLocaleDateString()}
+                            </p>
+                          )}
+                          {isCompleted && (
+                            <span className="text-sm text-green-600 font-medium">
+                              ✓ Completed
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Arrow Icon */}
+                      <div className="flex-shrink-0">
+                        <svg 
+                          className={`h-5 w-5 transition-colors ${
+                            isCompleted
+                              ? 'text-green-500 group-hover:text-green-600'
+                              : 'text-gray-400 group-hover:text-blue-600'
+                          }`}
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
                     </div>
-                    
-                    {/* Lesson Info */}
-                    <div className="flex-1 min-w-0">
-                      <h5 className="text-lg font-medium text-gray-900 group-hover:text-blue-700 transition-colors">
-                        {blog.title}
-                      </h5>
-                      {blog.publishedAt && (
-                        <p className="text-sm text-gray-500 mt-1">
-                          Published: {new Date(blog.publishedAt).toLocaleDateString()}
-                        </p>
-                      )}
-                    </div>
-                    
-                    {/* Arrow Icon */}
-                    <div className="flex-shrink-0">
-                      <svg 
-                        className="h-5 w-5 text-gray-400 group-hover:text-blue-600 transition-colors" 
-                        fill="none" 
-                        stroke="currentColor" 
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-8">

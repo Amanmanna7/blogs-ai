@@ -11,6 +11,11 @@ interface Course {
   subjectType: 'ACADEMIC' | 'TECHNICAL' | 'CREATIVE' | 'BUSINESS' | 'OTHER';
   chapterTopicCount: number;
   createdAt: string;
+  progress?: {
+    completedBlogs: number;
+    totalBlogs: number;
+    progressPercentage: number;
+  };
 }
 
 interface ApiResponse {
@@ -35,8 +40,33 @@ export default function CoursesPage() {
         const data: ApiResponse = await response.json();
         
         if (data.success) {
-          setCourses(data.data);
-          setFilteredCourses(data.data);
+          // Fetch progress for each course
+          const coursesWithProgress = await Promise.all(
+            data.data.map(async (course) => {
+              try {
+                const progressResponse = await fetch(`/api/progress?courseId=${course.id}`);
+                if (progressResponse.ok) {
+                  const progressData = await progressResponse.json();
+                  if (progressData.success) {
+                    return {
+                      ...course,
+                      progress: {
+                        completedBlogs: progressData.data.completedBlogs,
+                        totalBlogs: progressData.data.totalBlogs,
+                        progressPercentage: progressData.data.progressPercentage
+                      }
+                    };
+                  }
+                }
+              } catch (error) {
+                console.error(`Failed to fetch progress for course ${course.id}:`, error);
+              }
+              return course;
+            })
+          );
+          
+          setCourses(coursesWithProgress);
+          setFilteredCourses(coursesWithProgress);
         } else {
           setError(data.error || 'Failed to fetch courses');
         }

@@ -71,6 +71,11 @@ export default function BlogPage() {
     description: string;
     blogs: { id: string; slug: string; title: string; sequence: number; publishedAt: string | null }[];
   } | null>(null);
+  const [courseProgress, setCourseProgress] = useState<{
+    completedBlogs: number;
+    totalBlogs: number;
+    progressPercentage: number;
+  } | null>(null);
 
   useEffect(() => {
     const fetchBlog = async () => {
@@ -111,12 +116,55 @@ export default function BlogPage() {
         if (!res.ok) return;
         const data = await res.json();
         setChapterLessons(data);
+        
+        // Fetch course progress if we have chapter data
+        if (data.course && data.course.id) {
+          try {
+            const progressRes = await fetch(`/api/progress?courseId=${data.course.id}`);
+            if (progressRes.ok) {
+              const progressData = await progressRes.json();
+              if (progressData.success) {
+                setCourseProgress({
+                  completedBlogs: progressData.data.completedBlogs,
+                  totalBlogs: progressData.data.totalBlogs,
+                  progressPercentage: progressData.data.progressPercentage
+                });
+              }
+            }
+          } catch (progressError) {
+            console.error('Failed to fetch course progress:', progressError);
+          }
+        }
       } catch (e) {
         console.error('Failed to fetch chapter lessons', e);
       }
     };
     fetchChapter();
   }, [chapterId]);
+
+  // Track progress when user visits blog from course
+  useEffect(() => {
+    const trackProgress = async () => {
+      if (!blog || !chapterId) return;
+      
+      try {
+        await fetch('/api/progress', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            blogId: blog.id,
+            chapterId: chapterId
+          })
+        });
+      } catch (error) {
+        console.error('Failed to track progress:', error);
+      }
+    };
+
+    trackProgress();
+  }, [blog, chapterId]);
 
   if (loading) {
     return (
@@ -290,6 +338,31 @@ export default function BlogPage() {
                   </div>
                 </div>
 
+                {/* Course Progress (only when chapter present) */}
+                {/* {courseProgress && (
+                  <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-blue-100/50 p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Course Progress</h3>
+                    <div className="mb-4">
+                      <div className="flex justify-between text-sm text-gray-600 mb-2">
+                        <span>Overall Progress</span>
+                        <span>{courseProgress.completedBlogs}/{courseProgress.totalBlogs} Lessons</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-blue-600 to-purple-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${courseProgress.progressPercentage}%` }}
+                        ></div>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>{courseProgress.progressPercentage}% Complete</span>
+                        {courseProgress.progressPercentage === 100 && (
+                          <span className="text-green-600 font-medium">🎉 Course Completed!</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )} */}
+
                 {/* Chapter Lessons Sidebar (only when chapter present) */}
                 {chapterLessons && (
                   <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-blue-100/50 p-6">
@@ -334,6 +407,57 @@ export default function BlogPage() {
                   onChatToggle={setIsChatOpen}
                   className="mt-6"
                 />
+
+                {/* Chapter Progress (only when chapter present) */}
+                {chapterLessons && courseProgress ? (
+                  <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-blue-100/50 p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Chapter Progress</h3>
+                    <div className="mb-4">
+                      <div className="flex justify-between text-sm text-gray-600 mb-2">
+                        <span>Chapter: {chapterLessons.name}</span>
+                        <span>Overall Course Progress</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                        <div 
+                          className="bg-gradient-to-r from-blue-600 to-purple-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${courseProgress.progressPercentage}%` }}
+                        ></div>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-500">
+                        <span>{courseProgress.completedBlogs}/{courseProgress.totalBlogs} Lessons Completed</span>
+                        <span>{courseProgress.progressPercentage}% Complete</span>
+                      </div>
+                    </div>
+                    
+                    {/* Chapter Description */}
+                    <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                      <p className="text-sm text-gray-700 leading-relaxed">
+                        {chapterLessons.description}
+                      </p>
+                    </div>
+                    
+                    {/* Progress Status */}
+                    <div className="mt-4 flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                        <span className="text-sm text-gray-600">Learning in Progress</span>
+                      </div>
+                      {courseProgress.progressPercentage === 100 && (
+                        <div className="flex items-center space-x-1 text-green-600">
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span className="text-sm font-medium">Course Completed!</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : chapterLessons && !courseProgress ? (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                    <h4 className="font-semibold text-red-800">Progress Not Available</h4>
+                    <p className="text-sm text-red-700">Chapter data is available but course progress could not be loaded.</p>
+                  </div>
+                ) : null}
 
                 {/* Author Card */}
                 <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-blue-100/50 p-6">
