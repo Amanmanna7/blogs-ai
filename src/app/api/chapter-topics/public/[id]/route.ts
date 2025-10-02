@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { auth } from '@clerk/nextjs/server';
 
 export async function GET(
   request: NextRequest,
@@ -7,17 +8,52 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    const { userId: clerkUserId } = await auth();
+
+    const user = await prisma.user.findUnique({
+      where: {
+        clerkUserId: clerkUserId || ''
+      },
+      select: {
+        id: true
+      }
+    });
+
+    let userId = '';
+    if (user) {
+      userId = user.id;
+    }
 
     const chapterTopic = await prisma.chapterTopic.findUnique({
       where: { id },
-      include: {
-        course: true,
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        sequenceNumber: true,
         blogRelations: {
-          include: {
-            blog: true
+          select: {
+            blog: {
+              select: {
+                id: true,
+                slug: true,
+                title: true,
+                publishedAt: true,
+                status: true
+              }
+            },
+            sequence: true
           },
           orderBy: {
             sequence: 'asc'
+          }
+        },
+        blogProgress: {
+          where: {
+            userId: userId || '',
+          },
+          select: {
+            status: true
           }
         }
       }
@@ -26,6 +62,12 @@ export async function GET(
     if (!chapterTopic) {
       return NextResponse.json({ error: 'Chapter topic not found' }, { status: 404 });
     }
+    
+    let progressResponse = {
+      completedBlogs: chapterTopic.blogProgress.filter(bp => bp.status === 'COMPLETED').length,
+      totalBlogs: chapterTopic.blogRelations.length,
+      progressPercentage: chapterTopic.blogRelations.length > 0 ? Math.round((chapterTopic.blogProgress.filter(bp => bp.status === 'COMPLETED').length / chapterTopic.blogRelations.length) * 100) : 0
+    }
 
     // Only expose published blogs in public endpoint
     const filtered = {
@@ -33,7 +75,8 @@ export async function GET(
       name: chapterTopic.name,
       description: chapterTopic.description,
       sequenceNumber: chapterTopic.sequenceNumber,
-      course: { id: chapterTopic.course.id, name: chapterTopic.course.name },
+      progress: progressResponse,
+      isUserSignedIn: !!userId,
       blogs: chapterTopic.blogRelations
         .filter((rel) => rel.blog.status === 'PUBLISHED')
         .sort((a, b) => a.sequence - b.sequence)

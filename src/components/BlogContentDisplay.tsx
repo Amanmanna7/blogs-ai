@@ -108,8 +108,6 @@ export default function BlogContentDisplay({ content, className = '' }: BlogCont
 
   useEffect(() => {
     if (!contentRef.current) return;
-
-    console.log('BlogContentDisplay: Processing content for syntax highlighting');
     
     // Add a style tag to the document head to ensure our styles are loaded
     const styleId = 'blog-content-syntax-highlighting';
@@ -169,8 +167,6 @@ export default function BlogContentDisplay({ content, className = '' }: BlogCont
       
       if (!codeBlocks) return;
       
-      console.log(`Found ${codeBlocks.length} code blocks`);
-      
       codeBlocks.forEach((codeElement, index) => {
       const preElement = codeElement.parentElement;
       if (!preElement) return;
@@ -181,20 +177,10 @@ export default function BlogContentDisplay({ content, className = '' }: BlogCont
                       codeElement.className.match(/language-(\w+)/)?.[1] ||
                       '';
 
-      console.log(`Code block ${index + 1}:`, {
-        preClasses: preElement.className,
-        codeClasses: codeElement.className,
-        detectedLanguage: language,
-        isRegistered: language ? lowlight.registered(language) : false,
-        textContent: codeElement.textContent?.substring(0, 50) + '...'
-      });
-
       if (language) {
         try {
           // Use highlight.js directly for syntax highlighting
           const result = hljs.highlight(codeElement.textContent || '', { language });
-          console.log('Highlight.js result:', result);
-          console.log('Highlighted HTML:', result.value);
           
           // Set the highlighted HTML
           codeElement.innerHTML = result.value;
@@ -269,28 +255,12 @@ export default function BlogContentDisplay({ content, className = '' }: BlogCont
             `;
           });
           
-          console.log(`Successfully applied ${language} syntax highlighting to code block ${index + 1}`);
-          console.log('Code element classes after highlighting:', codeElement.className);
-          console.log('Code element innerHTML preview:', codeElement.innerHTML.substring(0, 200) + '...');
-          
           // Check if CSS classes are being applied
           const computedStyle = window.getComputedStyle(codeElement);
-          console.log('Code element computed styles:', {
-            backgroundColor: computedStyle.backgroundColor,
-            color: computedStyle.color,
-            fontFamily: computedStyle.fontFamily
-          });
           
           // Check for any conflicting styles after a short delay
           setTimeout(() => {
             const delayedStyle = window.getComputedStyle(codeElement);
-            console.log('Code element computed styles after delay:', {
-              backgroundColor: delayedStyle.backgroundColor,
-              color: delayedStyle.color,
-              fontFamily: delayedStyle.fontFamily
-            });
-            console.log('Code element classes after delay:', codeElement.className);
-            console.log('Code element innerHTML after delay:', codeElement.innerHTML.substring(0, 200) + '...');
             
             // Check if styles are being overridden
             if (delayedStyle.backgroundColor !== 'rgb(31, 41, 55)' || delayedStyle.color !== 'rgb(249, 250, 251)') {
@@ -307,7 +277,6 @@ export default function BlogContentDisplay({ content, className = '' }: BlogCont
                 (codeElement as HTMLElement).style.setProperty('background-color', '#1f2937', 'important');
                 (codeElement as HTMLElement).style.setProperty('color', '#f9fafb', 'important');
                 
-                console.log('Forced reapplication completed');
               } catch (error) {
                 console.error('Failed to reapply highlighting:', error);
               }
@@ -487,7 +456,6 @@ export default function BlogContentDisplay({ content, className = '' }: BlogCont
           const needsButtons = wrapper && (!wrapper.querySelector('.language-label') || !wrapper.querySelector('.copy-button'));
           
           if (needsHighlighting || needsButtons) {
-            console.log('Reapplying syntax highlighting and/or buttons...');
             
             try {
               if (language) {
@@ -666,7 +634,6 @@ export default function BlogContentDisplay({ content, className = '' }: BlogCont
             }
           } else if (needsButtons && wrapper) {
             // Just add buttons if they're missing (even if highlighting is fine)
-            console.log('Adding missing buttons...');
             
             // Add language label if missing
             if (!wrapper.querySelector('.language-label') && language) {

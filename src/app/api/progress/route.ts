@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
       create: {
         chapterId: chapterId,
         userId: dbUser.id,
-        status: 'started'
+        status: 'STARTED'
       }
     });
 
@@ -73,14 +73,14 @@ export async function POST(request: NextRequest) {
         }
       },
       update: {
-        status: 'completed',
+        status: 'COMPLETED',
         completedAt: new Date()
       },
       create: {
         blogId: blogId,
         chapterId: chapterId,
         userId: dbUser.id,
-        status: 'completed',
+        status: 'COMPLETED',
         completedAt: new Date()
       }
     });
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
       where: {
         chapterId: chapterId,
         userId: dbUser.id,
-        status: 'completed'
+        status: 'COMPLETED'
       }
     });
 
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
           }
         },
         data: {
-          status: 'completed',
+          status: 'COMPLETED',
           completedAt: new Date()
         }
       });
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
           courseId: chapter.courseId
         },
         userId: dbUser.id,
-        status: 'completed'
+        status: 'COMPLETED'
       }
     });
 
@@ -141,13 +141,13 @@ export async function POST(request: NextRequest) {
           }
         },
         update: {
-          status: 'completed',
+          status: 'COMPLETED',
           completedAt: new Date()
         },
         create: {
           courseId: chapter.courseId,
           userId: dbUser.id,
-          status: 'completed',
+          status: 'COMPLETED',
           completedAt: new Date()
         }
       });
@@ -161,12 +161,12 @@ export async function POST(request: NextRequest) {
           }
         },
         update: {
-          status: 'started'
+          status: 'STARTED'
         },
         create: {
           courseId: chapter.courseId,
           userId: dbUser.id,
-          status: 'started'
+          status: 'STARTED'
         }
       });
     }
@@ -248,51 +248,35 @@ export async function GET(request: NextRequest) {
               }
             }
           }
+        },
+        chapterProgress: {
+          select: {
+            status: true,
+            completedAt: true,
+          }
+        },
+        blogProgress: {
+          select: {
+            status: true,
+            completedAt: true,
+            chapterId: true,
+            blogId: true
+          }
         }
       },
       orderBy: { sequenceNumber: 'asc' }
     });
 
-    // Get progress for each chapter
-    const chaptersWithProgress = await Promise.all(
-      chapters.map(async (chapter) => {
-        const chapterProgress = await prisma.chapterProgress.findUnique({
-          where: {
-            userId_chapterId: {
-              userId: dbUser.id,
-              chapterId: chapter.id
-            }
-          }
-        });
+    const totalBlogsInCourse = chapters.reduce((sum, chapter) => sum + chapter.blogRelations.length, 0);
+    const completedBlogsInCourse = chapters.reduce((sum, chapter) => sum + chapter.blogProgress.filter(bp => bp.status === 'COMPLETED').length, 0);
 
-        // Get blog progress for this chapter
-        const blogProgress = await prisma.blogProgress.findMany({
-          where: {
-            chapterId: chapter.id,
-            userId: dbUser.id
-          }
-        });
-
-        const completedBlogs = blogProgress.filter(bp => bp.status === 'completed').length;
-        const totalBlogs = chapter.blogRelations.length;
-
-        return {
-          ...chapter,
-          progress: chapterProgress,
-          completedBlogs,
-          totalBlogs,
-          blogProgress: blogProgress.map(bp => ({
-            blogId: bp.blogId,
-            status: bp.status,
-            completedAt: bp.completedAt
-          }))
-        };
-      })
-    );
-
-    // Calculate overall course progress
-    const totalBlogsInCourse = chaptersWithProgress.reduce((sum, chapter) => sum + chapter.totalBlogs, 0);
-    const completedBlogsInCourse = chaptersWithProgress.reduce((sum, chapter) => sum + chapter.completedBlogs, 0);
+    const chaptersWithProgress = chapters.map(chapter => ({
+      id: chapter.id,
+      completedBlogs: chapter.blogProgress.filter(bp => bp.status === 'COMPLETED').length,
+      totalBlogs: chapter.blogRelations.length,
+      progress: chapter.chapterProgress,
+      blogProgress: chapter.blogProgress
+    }));
 
     return NextResponse.json({
       success: true,

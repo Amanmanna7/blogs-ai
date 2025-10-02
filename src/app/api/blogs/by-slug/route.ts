@@ -15,8 +15,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log('Fetching blog by slug:', slug);
-
     const blog = await prisma.blog.findUnique({
       where: { slug },
       include: {

@@ -29,8 +29,6 @@ export async function GET() {
         createdAt: 'desc',
       },
     });
-
-    console.log(`Found ${blogs.length} blogs (all statuses)`);
     
     return NextResponse.json({ 
       data: blogs,

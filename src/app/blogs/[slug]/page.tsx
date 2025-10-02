@@ -6,6 +6,7 @@ import BlogPreview from '@/components/BlogPreview';
 import Link from 'next/link';
 import ScrollToTop from '@/components/ScrollToTop';
 import AIChat from '@/components/AIChat';
+import QuizButton from '@/components/QuizButton';
 
 interface Category {
   id: string;
@@ -60,7 +61,8 @@ export default function BlogPage() {
   const slug = params.slug as string;
   const searchParams = useSearchParams();
   const chapterId = searchParams.get('chapter');
-  
+
+  const [isSignedIn, setIsSignedIn] = useState(false);
   const [blog, setBlog] = useState<Blog | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,7 +73,7 @@ export default function BlogPage() {
     description: string;
     blogs: { id: string; slug: string; title: string; sequence: number; publishedAt: string | null }[];
   } | null>(null);
-  const [courseProgress, setCourseProgress] = useState<{
+  const [chapterProgress, setChapterProgress] = useState<{
     completedBlogs: number;
     totalBlogs: number;
     progressPercentage: number;
@@ -117,23 +119,16 @@ export default function BlogPage() {
         const data = await res.json();
         setChapterLessons(data);
         
-        // Fetch course progress if we have chapter data
-        if (data.course && data.course.id) {
-          try {
-            const progressRes = await fetch(`/api/progress?courseId=${data.course.id}`);
-            if (progressRes.ok) {
-              const progressData = await progressRes.json();
-              if (progressData.success) {
-                setCourseProgress({
-                  completedBlogs: progressData.data.completedBlogs,
-                  totalBlogs: progressData.data.totalBlogs,
-                  progressPercentage: progressData.data.progressPercentage
-                });
-              }
-            }
-          } catch (progressError) {
-            console.error('Failed to fetch course progress:', progressError);
-          }
+        // Fetch chapter progress if we have chapter data
+        if (data.progress) {
+          setChapterProgress({
+            completedBlogs: data.progress.completedBlogs || 0,
+            totalBlogs: data.progress.totalBlogs || 0,
+            progressPercentage: data.progress.progressPercentage || 0
+          });
+        }
+        if(data.isUserSignedIn){
+          setIsSignedIn(true);
         }
       } catch (e) {
         console.error('Failed to fetch chapter lessons', e);
@@ -228,6 +223,7 @@ export default function BlogPage() {
               />
             </div>
 
+
             {/* Next Lesson CTA (only when chapter present and lesson exists) */}
             {chapterLessons && (() => {
               const currentIndex = chapterLessons.blogs.findIndex(b => b.slug === slug);
@@ -297,6 +293,15 @@ export default function BlogPage() {
             ) : (
               /* Blog Information when chat is closed */
               <div className="space-y-6">
+                {/* Quiz Button - only show when chapter is present */}
+                {chapterId && (
+                  <QuizButton
+                    blogId={blog.id}
+                    chapterTopicId={chapterId}
+                    blogSlug={blog.slug}
+                  />
+                )}
+
                 {/* Blog Details Card */}
                 <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-blue-100/50 p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Blog Details</h3>
@@ -408,32 +413,81 @@ export default function BlogPage() {
                   className="mt-6"
                 />
 
-                {/* Chapter Progress (only when chapter present) */}
-                {chapterLessons && courseProgress ? (
+                {/* Sign In to Save Progress (only when chapter present and user not signed in) */}
+                {chapterLessons && !isSignedIn && (
+                  <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-2xl shadow-2xl p-8 transform hover:scale-[1.02] transition-all duration-300">
+                    {/* Background Pattern */}
+                    <div className="absolute inset-0 opacity-10">
+                      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/20 to-transparent"></div>
+                      <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full"></div>
+                      <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-white/5 rounded-full"></div>
+                    </div>
+                    
+                    {/* Content */}
+                    <div className="relative z-10 text-center">
+                      {/* Icon */}
+                      <div className="mx-auto w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-6 animate-pulse">
+                        <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                      </div>
+                      
+                      {/* Title */}
+                      <h3 className="text-2xl font-bold text-white mb-3">Unlock Your Learning Journey</h3>
+                      
+                      {/* Description */}
+                      <p className="text-blue-100 mb-8 text-lg leading-relaxed max-w-md mx-auto">
+                        Sign in to track your progress, save your journey, and get personalized AI support for this chapter.
+                      </p>
+                      
+                      {/* Sign In Button */}
+                      <Link
+                        href={`/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`}
+                        className="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-700 text-lg font-semibold rounded-xl hover:bg-blue-50 hover:shadow-xl transform hover:scale-105 transition-all duration-300 shadow-lg"
+                      >
+                        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 3 0 013-3h7a3 3 0 013 3v1" />
+                        </svg>
+                        Sign In to Continue
+                      </Link>
+                      
+                      {/* Features */}
+                      <div className="mt-8 flex flex-wrap justify-center gap-6 text-sm text-blue-200">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-white rounded-full"></div>
+                          <span>Track Progress</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-white rounded-full"></div>
+                          <span>Save Journey</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-white rounded-full"></div>
+                          <span>AI Support</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Chapter Progress (only when chapter present and user is signed in) */}
+                {chapterLessons && isSignedIn && chapterProgress ? (
                   <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-blue-100/50 p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Chapter Progress</h3>
                     <div className="mb-4">
                       <div className="flex justify-between text-sm text-gray-600 mb-2">
                         <span>Chapter: {chapterLessons.name}</span>
-                        <span>Overall Course Progress</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
                         <div 
                           className="bg-gradient-to-r from-blue-600 to-purple-600 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${courseProgress.progressPercentage}%` }}
+                          style={{ width: `${chapterProgress.progressPercentage}%` }}
                         ></div>
                       </div>
                       <div className="flex justify-between text-xs text-gray-500">
-                        <span>{courseProgress.completedBlogs}/{courseProgress.totalBlogs} Lessons Completed</span>
-                        <span>{courseProgress.progressPercentage}% Complete</span>
+                        <span>{chapterProgress.completedBlogs}/{chapterProgress.totalBlogs} Lessons Completed</span>
+                        <span>{chapterProgress.progressPercentage}% Complete</span>
                       </div>
-                    </div>
-                    
-                    {/* Chapter Description */}
-                    <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
-                      <p className="text-sm text-gray-700 leading-relaxed">
-                        {chapterLessons.description}
-                      </p>
                     </div>
                     
                     {/* Progress Status */}
@@ -442,20 +496,20 @@ export default function BlogPage() {
                         <div className="h-2 w-2 rounded-full bg-blue-500"></div>
                         <span className="text-sm text-gray-600">Learning in Progress</span>
                       </div>
-                      {courseProgress.progressPercentage === 100 && (
+                      {chapterProgress.progressPercentage === 100 && (
                         <div className="flex items-center space-x-1 text-green-600">
                           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
-                          <span className="text-sm font-medium">Course Completed!</span>
+                          <span className="text-sm font-medium">Chapter Completed!</span>
                         </div>
                       )}
                     </div>
                   </div>
-                ) : chapterLessons && !courseProgress ? (
+                ) : chapterLessons && isSignedIn && !chapterProgress ? (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
                     <h4 className="font-semibold text-red-800">Progress Not Available</h4>
-                    <p className="text-sm text-red-700">Chapter data is available but course progress could not be loaded.</p>
+                    <p className="text-sm text-red-700">Chapter data is available but chapter progress could not be loaded.</p>
                   </div>
                 ) : null}
 

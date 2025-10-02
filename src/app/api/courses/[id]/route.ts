@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { auth } from '@clerk/nextjs/server';
 
 export async function GET(
   request: NextRequest,
@@ -7,6 +8,21 @@ export async function GET(
 ) {
   try {
     const { id: courseId } = await params;
+    const { userId: clerkUserId } = await auth();
+
+    const user = await prisma.user.findUnique({
+      where: {
+        clerkUserId: clerkUserId || ''
+      },
+      select: {
+        id: true
+      }
+    });
+
+    let userId = '';
+    if (user) {
+      userId = user.id;
+    }
 
     // Fetch course with chapter topics and their related blogs
     const course = await prisma.course.findUnique({
@@ -42,10 +58,45 @@ export async function GET(
               orderBy: {
                 sequence: 'asc'
               }
+            },
+            chapterProgress: {
+              where: {
+                userId: userId || '',
+              },
+              select: {
+                status: true,
+                completedAt: true,
+              }
+            },
+            blogProgress: {
+              where: {
+                userId: userId || '',
+              },
+              select: {
+                status: true,
+                completedAt: true,
+                chapterId: true,
+                blogId: true
+              }
             }
           },
           orderBy: {
             sequenceNumber: 'asc'
+          }
+        },
+        assessments: {
+          where: {
+            userId: userId || '',
+          },
+          select: {
+            id: true,
+            status: true,
+            blogId: true,
+            title: true,
+            totalQuestions: true,
+            createdAt: true,
+            updatedAt: true,
+            chapterTopicId: true
           }
         }
       }
@@ -61,9 +112,28 @@ export async function GET(
       );
     }
 
+    const totalBlogsInCourse = course.chapterTopics.reduce((sum, chapter) => sum + chapter.blogRelations.length, 0);
+    const completedBlogsInCourse = course.chapterTopics.reduce((sum, chapter) => sum + chapter.blogProgress.filter(bp => bp.status === 'COMPLETED').length, 0);
+
+    const chaptersWithProgress = course.chapterTopics.map((chapter) => ({
+      id: chapter.id,
+      completedBlogs: chapter.blogProgress.filter(bp => bp.status === 'COMPLETED').length,
+      totalBlogs: chapter.blogRelations.length,
+      progress: chapter.chapterProgress,
+      blogProgress: chapter.blogProgress
+    }));
+
+    let progressResponse = {
+      completedBlogs: completedBlogsInCourse,
+      totalBlogs: totalBlogsInCourse,
+      progressPercentage: totalBlogsInCourse > 0 ? Math.round((completedBlogsInCourse / totalBlogsInCourse) * 100) : 0,
+      chapters: chaptersWithProgress
+    }
+
     // Transform the data to include only published blogs and sort them properly
     const transformedCourse = {
       ...course,
+      progress: progressResponse,
       chapterTopics: course.chapterTopics.map((topic, index) => ({
         ...topic,
         displayNumber: index + 1, // Display number (1, 2, 3...)

@@ -25,6 +25,16 @@ interface Course {
       sequence: number;
     }[];
   }[];
+  assessments: {
+    id: string;
+    status: string;
+    title: string | null;
+    totalQuestions: number;
+    chapterTopicId: string;
+    blogId: string;
+    createdAt: string;
+    updatedAt: string;
+  }[];
   progress?: {
     completedBlogs: number;
     totalBlogs: number;
@@ -69,27 +79,28 @@ export default function CourseDetailPage() {
         const data: ApiResponse = await response.json();
         
         if (data.success) {
-          // Fetch progress data
-          try {
-            const progressResponse = await fetch(`/api/progress?courseId=${courseId}`);
-            if (progressResponse.ok) {
-              const progressData = await progressResponse.json();
-              if (progressData.success) {
-                setCourse({
-                  ...data.data,
-                  progress: {
-                    completedBlogs: progressData.data.completedBlogs,
-                    totalBlogs: progressData.data.totalBlogs,
-                    progressPercentage: progressData.data.progressPercentage,
-                    chapters: progressData.data.chapters
-                  }
-                });
-                return;
-              }
-            }
-          } catch (progressError) {
-            console.error('Failed to fetch progress:', progressError);
-          }
+          // try {
+          //   const progressResponse = await fetch(`/api/progress?courseId=${courseId}`);
+          //   if (progressResponse.ok) {
+          //     const progressData = await progressResponse.json();
+          //     if (progressData.success) {
+          //       setCourse({
+          //         ...data.data,
+          //         progress: {
+          //           completedBlogs: progressData.data.completedBlogs,
+          //           totalBlogs: progressData.data.totalBlogs,
+          //           progressPercentage: progressData.data.progressPercentage,
+          //           chapters: progressData.data.chapters
+          //         }
+          //       });
+          //       return;
+          //     }
+          //   }
+          // } catch (progressError) {
+          //   console.error('Failed to fetch progress:', progressError);
+          // }
+
+          console.log('data.data', data.data);
           
           setCourse(data.data);
         } else {
@@ -110,12 +121,10 @@ export default function CourseDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <div className="container mx-auto px-4 py-16">
-          <div className="text-center">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
-            <p className="mt-4 text-gray-600">Loading course...</p>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+          <p className="mt-4 text-lg text-gray-600 font-medium">Loading course...</p>
         </div>
       </div>
     );
@@ -197,6 +206,7 @@ export default function CourseDetailPage() {
                     completedBlogs={course.progress?.chapters.find(c => c.id === chapterTopic.id)?.completedBlogs || 0}
                     totalBlogs={course.progress?.chapters.find(c => c.id === chapterTopic.id)?.totalBlogs || 0}
                     blogProgress={course.progress?.chapters.find(c => c.id === chapterTopic.id)?.blogProgress || []}
+                    assessments={course.assessments?.filter(a => a.chapterTopicId === chapterTopic.id) || []}
                   />
                 </div>
               ))}

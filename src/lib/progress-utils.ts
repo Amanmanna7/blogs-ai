@@ -79,7 +79,7 @@ export async function getUserProgress(userId: string, courseId: string): Promise
         }
       });
 
-      const completedBlogs = blogProgress.filter(bp => bp.status === 'completed').length;
+      const completedBlogs = blogProgress.filter(bp => bp.status === 'COMPLETED').length;
       const totalBlogs = chapter.blogRelations.length;
 
       return {
@@ -111,7 +111,7 @@ export async function getUserProgress(userId: string, courseId: string): Promise
 
 export function getProgressStatus(progress?: { status: string; completedAt?: Date } | null): 'not-started' | 'in-progress' | 'completed' {
   if (!progress) return 'not-started';
-  if (progress.status === 'completed') return 'completed';
+  if (progress.status === 'COMPLETED') return 'completed';
   return 'in-progress';
 }
 

@@ -56,11 +56,6 @@ export default function BlogForm({ initialData, isEditing = false }: BlogFormPro
   );
   const [selectedCategories, setSelectedCategories] = useState<string[]>(() => {
     const initialCategoryIds = initialData?.categories?.map(c => c.id) || [];
-    console.log('Initial selected categories:', {
-      initialData: !!initialData,
-      categories: initialData?.categories,
-      categoryIds: initialCategoryIds
-    });
     return initialCategoryIds;
   });
   const [sequences, setSequences] = useState<BlogSequence[]>(
@@ -85,11 +80,6 @@ export default function BlogForm({ initialData, isEditing = false }: BlogFormPro
   // Populate sequences with full data when editing
   useEffect(() => {
     if (isEditing && initialData?.sequences && blogContents.length > 0 && blogMedia.length > 0) {
-      console.log('Populating sequences for editing:', {
-        initialSequences: initialData.sequences,
-        blogContents: blogContents.length,
-        blogMedia: blogMedia.length
-      });
       
       const populatedSequences = initialData.sequences.map(seq => {
         const populatedSeq = { ...seq };
@@ -100,7 +90,6 @@ export default function BlogForm({ initialData, isEditing = false }: BlogFormPro
           if (content) {
             populatedSeq.blogContent = content;
             populatedSeq.type = 'content'; // Ensure type is set correctly
-            console.log('Populated content for sequence:', seq.id, content.name);
           }
         }
         
@@ -110,38 +99,22 @@ export default function BlogForm({ initialData, isEditing = false }: BlogFormPro
           if (media) {
             populatedSeq.blogMedia = media;
             populatedSeq.type = 'media'; // Ensure type is set correctly
-            console.log('Populated media for sequence:', seq.id, media.name);
           }
         }
         
         return populatedSeq;
       });
       
-      console.log('Setting populated sequences:', populatedSequences);
       setSequences(populatedSequences);
     }
   }, [isEditing, initialData?.sequences, blogContents, blogMedia]);
 
   // Ensure selected categories are properly set when editing
   useEffect(() => {
-    console.log('Category selection useEffect triggered:', {
-      isEditing,
-      hasInitialData: !!initialData,
-      hasCategories: !!initialData?.categories,
-      categoriesLength: categories.length,
-      selectedCategoriesLength: selectedCategories.length
-    });
+    
     
     if (isEditing && initialData?.categories && categories.length > 0) {
-      console.log('Setting selected categories for editing:', {
-        initialCategories: initialData.categories,
-        availableCategories: categories.length,
-        selectedCategoryIds: initialData.categories.map(c => c.id),
-        currentSelectedCategories: selectedCategories
-      });
-      
       const categoryIds = initialData.categories.map(c => c.id);
-      console.log('Setting selected categories to:', categoryIds);
       setSelectedCategories(categoryIds);
     }
   }, [isEditing, initialData?.categories, categories]);
@@ -159,12 +132,6 @@ export default function BlogForm({ initialData, isEditing = false }: BlogFormPro
         contentsRes.json(),
         mediaRes.json()
       ]);
-
-      console.log('Fetched data:', {
-        categories: categoriesData.categories?.length || 0,
-        contents: contentsData.blogContents?.length || 0,
-        media: mediaData.data?.length || 0
-      });
       
       setCategories(categoriesData.categories || []);
       setBlogContents(contentsData.blogContents || []);
@@ -230,7 +197,6 @@ export default function BlogForm({ initialData, isEditing = false }: BlogFormPro
   };
 
   const updateSequence = (id: string, updates: Partial<BlogSequence>) => {
-    console.log('Updating sequence:', { id, updates, currentSequences: sequences });
     
     setSequences(sequences.map(seq => {
       if (seq.id === id) {
@@ -261,7 +227,6 @@ export default function BlogForm({ initialData, isEditing = false }: BlogFormPro
           }
         }
         
-        console.log('Updated sequence:', updatedSeq);
         return updatedSeq;
       }
       return seq;
@@ -278,10 +243,8 @@ export default function BlogForm({ initialData, isEditing = false }: BlogFormPro
   };
 
   const moveSequence = (dragIndex: number, hoverIndex: number) => {
-    console.log('Moving sequence:', { dragIndex, hoverIndex, totalSequences: sequences.length });
     
     if (dragIndex === hoverIndex) {
-      console.log('Same position, no move needed');
       return;
     }
     
@@ -301,7 +264,6 @@ export default function BlogForm({ initialData, isEditing = false }: BlogFormPro
       sequence: index + 1
     }));
     
-    console.log('Reordered sequences:', reorderedSequences.map(s => ({ id: s.id, sequence: s.sequence, type: s.type })));
     setSequences(reorderedSequences);
   };
 
@@ -480,12 +442,6 @@ export default function BlogForm({ initialData, isEditing = false }: BlogFormPro
                 <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-300 rounded-md p-2">
                   {categories.map((category) => {
                     const isSelected = selectedCategories.includes(category.id);
-                    console.log('Rendering category:', {
-                      id: category.id,
-                      name: category.name,
-                      isSelected,
-                      selectedCategories
-                    });
                     return (
                       <label key={category.id} className="flex items-center">
                         <input
@@ -538,14 +494,6 @@ export default function BlogForm({ initialData, isEditing = false }: BlogFormPro
                   {sequences
                     .sort((a, b) => a.sequence - b.sequence)
                     .map((sequence, index) => {
-                      console.log('Rendering sequence:', {
-                        id: sequence.id,
-                        type: sequence.type,
-                        blogContentId: sequence.blogContentId,
-                        blogMediaId: sequence.blogMediaId,
-                        hasBlogContent: !!sequence.blogContent,
-                        hasBlogMedia: !!sequence.blogMedia
-                      });
                       return (
                         <BlogSequenceItem
                           key={sequence.id}

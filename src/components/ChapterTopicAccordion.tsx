@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import AssessmentStatus from './AssessmentStatus';
 
 interface ChapterTopicAccordionProps {
   chapterTopic: {
@@ -30,6 +31,16 @@ interface ChapterTopicAccordionProps {
     status: string;
     completedAt?: Date;
   }>;
+  assessments?: {
+    id: string;
+    status: string;
+    title: string | null;
+    totalQuestions: number;
+    blogId: string;
+    chapterTopicId: string;
+    createdAt: string;
+    updatedAt: string;
+  }[];
 }
 
 const subjectTypeColors = {
@@ -62,7 +73,8 @@ export default function ChapterTopicAccordion({
   progress,
   completedBlogs = 0,
   totalBlogs = 0,
-  blogProgress = []
+  blogProgress = [],
+  assessments = []
 }: ChapterTopicAccordionProps) {
   const [isExpanded, setIsExpanded] = useState(isOpen);
   const colors = subjectTypeColors[subjectType];
@@ -95,7 +107,7 @@ export default function ChapterTopicAccordion({
                     <span className="text-sm text-gray-600">
                       {completedBlogs}/{totalBlogs} completed
                     </span>
-                    {progress?.status === 'completed' && (
+                    {progress?.status === 'COMPLETED' && (
                       <span className="text-green-600 text-sm font-medium">✓</span>
                     )}
                   </div>
@@ -159,12 +171,13 @@ export default function ChapterTopicAccordion({
               
               {chapterTopic.blogs.map((blog, index) => {
                 const blogProgressItem = blogProgress.find(bp => bp.blogId === blog.id);
-                const isCompleted = blogProgressItem?.status === 'completed';
+                const isCompleted = blogProgressItem?.status === 'COMPLETED';
+                // const assessment = 
+                const assessment = assessments?.find(a => a.blogId === blog.id);
                 
                 return (
-                  <Link
+                  <div
                     key={blog.id}
-                    href={`/blogs/${blog.slug}?chapter=${chapterTopic.id}`}
                     className={`group block p-4 rounded-lg border transition-all duration-300 hover:shadow-md ${
                       isCompleted 
                         ? 'border-green-200 bg-green-50 hover:bg-green-100' 
@@ -178,19 +191,24 @@ export default function ChapterTopicAccordion({
                           ? 'bg-green-100 text-green-600 group-hover:bg-green-200'
                           : 'bg-gray-100 group-hover:bg-blue-100 text-gray-600 group-hover:text-blue-600'
                       }`}>
-                        {isCompleted ? '✓' : index + 1}
+                        {index + 1}
                       </div>
                       
                       {/* Lesson Info */}
                       <div className="flex-1 min-w-0">
-                        <h5 className={`text-lg font-medium transition-colors ${
-                          isCompleted
-                            ? 'text-green-900 group-hover:text-green-700'
-                            : 'text-gray-900 group-hover:text-blue-700'
-                        }`}>
-                          {blog.title}
-                        </h5>
-                        <div className="flex items-center space-x-4 mt-1">
+                        <Link
+                          href={`/blogs/${blog.slug}?chapter=${chapterTopic.id}`}
+                          className="block"
+                        >
+                          <h5 className={`text-lg font-medium transition-colors ${
+                            isCompleted
+                              ? 'text-green-900 group-hover:text-green-700'
+                              : 'text-gray-900 group-hover:text-blue-700'
+                          }`}>
+                            {blog.title}
+                          </h5>
+                        </Link>
+                        <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4 mt-1">
                           {blog.publishedAt && (
                             <p className="text-sm text-gray-500">
                               Published: {new Date(blog.publishedAt).toLocaleDateString()}
@@ -205,7 +223,10 @@ export default function ChapterTopicAccordion({
                       </div>
                       
                       {/* Arrow Icon */}
-                      <div className="flex-shrink-0">
+                      <Link
+                        href={`/blogs/${blog.slug}?chapter=${chapterTopic.id}`}
+                        className="flex-shrink-0"
+                      >
                         <svg 
                           className={`h-5 w-5 transition-colors ${
                             isCompleted
@@ -218,9 +239,19 @@ export default function ChapterTopicAccordion({
                         >
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
-                      </div>
+                      </Link>
                     </div>
-                  </Link>
+                    
+                    {/* Assessment Status - Full Width */}
+                    {assessment && (
+                      <div className="mt-4">
+                        <AssessmentStatus 
+                          assessment={assessment} 
+                          blogSlug={blog.slug}
+                        />
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>

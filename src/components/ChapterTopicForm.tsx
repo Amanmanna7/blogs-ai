@@ -82,9 +82,6 @@ export default function ChapterTopicForm({
         blogsRes.json()
       ]);
 
-      console.log('Courses data:', coursesData);
-      console.log('Blogs data:', blogsData);
-
       setCourses(coursesData.data || []);
       setBlogs(blogsData.data || []);
     } catch (err) {

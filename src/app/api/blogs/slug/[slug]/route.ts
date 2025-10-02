@@ -9,8 +9,6 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
-    console.log('slug', slug);
-
 
     const blog = await prisma.blog.findUnique({
       where: { slug },
@@ -39,8 +37,6 @@ export async function GET(
         },
       },
     });
-
-    console.log('blog', blog);
 
     if (!blog) {
       return NextResponse.json(

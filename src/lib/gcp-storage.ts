@@ -81,7 +81,6 @@ export async function deleteFile(fileName: string): Promise<void> {
   
   try {
     await file.delete();
-    console.log(`Successfully deleted file: ${fileName}`);
   } catch (error) {
     console.error('Error deleting file:', error);
     throw error;

@@ -73,7 +73,6 @@ export default function BlogSequenceItem({
     try {
       const dragIndex = parseInt(e.dataTransfer.getData('text/plain'));
       if (!isNaN(dragIndex) && dragIndex !== index) {
-        console.log('Moving sequence from', dragIndex, 'to', index);
         onMove(dragIndex, index);
       }
     } catch (error) {

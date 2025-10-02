@@ -59,6 +59,44 @@ enum SessionStatus {
   DELETED
 }
 
+enum QuestionLevel {
+  EASY
+  MEDIUM
+  HARD
+  ADVANCE
+}
+
+enum QuestionType {
+  TRUE_FALSE
+  MCQ_SINGLE
+  MCQ_MULTIPLE
+  FILL_BLANK
+  MIXED
+}
+
+enum AssessmentStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum QuestionStatus {
+  DRAFT
+  LIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum ProgressStatus {
+  NOT_STARTED
+  STARTED
+  IN_PROGRESS
+  COMPLETED
+  PAUSED
+  ABANDONED
+}
+
 // Core Models
 model User {
   id                String         @id @default(cuid())
@@ -77,6 +115,8 @@ model User {
   blogProgress      BlogProgress[]
   chapterProgress   ChapterProgress[]
   courseProgress    CourseProgress[]
+  assessments       Assessment[]
+  userPreferences   UserPreference[]
 }
 
 model BlogContent {
@@ -112,6 +152,8 @@ model Blog {
   chapterTopicRelations           ChapterTopicRelation[]
   chatSessions                    ChatSession[]
   blogProgress                    BlogProgress[]
+  questions                       Question[]
+  assessments                     Assessment[]
 }
 
 model BlogMedia {
@@ -152,6 +194,8 @@ model Course {
   chapterTopics     ChapterTopic[]
   chatSessions      ChatSession[]
   courseProgress    CourseProgress[]
+  questions         Question[]
+  assessments       Assessment[]
 }
 
 model ChapterTopic {
@@ -169,6 +213,8 @@ model ChapterTopic {
   chatSessions      ChatSession[]
   blogProgress      BlogProgress[]
   chapterProgress   ChapterProgress[]
+  questions         Question[]
+  assessments       Assessment[]
   
   // Constraints
   @@unique([courseId, sequenceNumber])
@@ -275,8 +321,10 @@ model BlogProgress {
   blogId            String         @map("blog_id")
   chapterId         String         @map("chapter_id")
   userId            String         @map("user_id")
-  status            String         @default("started") // "started", "completed"
+  status            ProgressStatus @default(NOT_STARTED)
   completedAt       DateTime?      @map("completed_at") @db.Timestamptz
+  startedAt         DateTime?      @map("started_at") @db.Timestamptz
+  lastAccessedAt    DateTime?      @map("last_accessed_at") @db.Timestamptz
   createdAt         DateTime       @default(now()) @db.Timestamptz
   updatedAt         DateTime       @updatedAt @db.Timestamptz
   
@@ -297,8 +345,10 @@ model ChapterProgress {
   id                String         @id @default(cuid())
   chapterId         String         @map("chapter_id")
   userId            String         @map("user_id")
-  status            String         @default("started") // "started", "completed"
+  status            ProgressStatus @default(NOT_STARTED)
   completedAt       DateTime?      @map("completed_at") @db.Timestamptz
+  startedAt         DateTime?      @map("started_at") @db.Timestamptz
+  lastAccessedAt    DateTime?      @map("last_accessed_at") @db.Timestamptz
   createdAt         DateTime       @default(now()) @db.Timestamptz
   updatedAt         DateTime       @updatedAt @db.Timestamptz
   
@@ -317,8 +367,10 @@ model CourseProgress {
   id                String         @id @default(cuid())
   courseId          String         @map("course_id")
   userId            String         @map("user_id")
-  status            String         @default("started") // "started", "completed"
+  status            ProgressStatus @default(NOT_STARTED)
   completedAt       DateTime?      @map("completed_at") @db.Timestamptz
+  startedAt         DateTime?      @map("started_at") @db.Timestamptz
+  lastAccessedAt    DateTime?      @map("last_accessed_at") @db.Timestamptz
   createdAt         DateTime       @default(now()) @db.Timestamptz
   updatedAt         DateTime       @updatedAt @db.Timestamptz
   
@@ -330,4 +382,103 @@ model CourseProgress {
   @@unique([userId, courseId])
   @@index([userId])
   @@index([status])
+}
+
+// Quiz Models
+model Question {
+  id              String        @id @default(cuid())
+  text            String
+  options         Json?         // For MCQs, matching etc. Keep as JSON: {a: "...", b: "..."}
+  correctAnswers  Json?         // Can store ["a", "c"] for MCQ multiple
+  explanation     String?
+  level           QuestionLevel
+  type            QuestionType
+  status          QuestionStatus @default(LIVE)
+  blogId          String?       @map("blog_id")
+  chapterTopicId  String?       @map("chapter_topic_id")
+  courseId        String?       @map("course_id")
+  createdAt       DateTime      @default(now()) @db.Timestamptz
+  updatedAt       DateTime      @updatedAt @db.Timestamptz
+  
+  // Relations
+  blog            Blog?         @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  chapterTopic    ChapterTopic? @relation(fields: [chapterTopicId], references: [id], onDelete: Cascade)
+  course          Course?       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  assessmentQuestions AssessmentQuestion[]
+  
+  // Indexes
+  @@index([blogId])
+  @@index([chapterTopicId])
+  @@index([courseId])
+  @@index([level])
+  @@index([type])
+  @@index([status])
+}
+
+model Assessment {
+  id              String          @id @default(cuid())
+  userId          String          @map("user_id")
+  title           String?
+  description     String?
+  level           QuestionLevel
+  allowedTypes    QuestionType[]  // what user selected for this quiz
+  totalQuestions  Int
+  status          AssessmentStatus @default(DRAFT)
+  blogId          String?         @map("blog_id")
+  chapterTopicId  String?         @map("chapter_topic_id")
+  courseId        String?         @map("course_id")
+  createdAt       DateTime        @default(now()) @db.Timestamptz
+  updatedAt       DateTime        @updatedAt @db.Timestamptz
+  
+  // Relations
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  blog            Blog?           @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  chapterTopic    ChapterTopic?   @relation(fields: [chapterTopicId], references: [id], onDelete: Cascade)
+  course          Course?         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  assessmentQuestions AssessmentQuestion[]
+  
+  // Indexes
+  @@index([userId])
+  @@index([blogId])
+  @@index([chapterTopicId])
+  @@index([courseId])
+  @@index([status])
+}
+
+model AssessmentQuestion {
+  id             String     @id @default(cuid())
+  assessmentId   String     @map("assessment_id")
+  questionId     String     @map("question_id")
+  sequence       Int        // order of question in quiz
+  userAnswer     Json?      // track answer if attempted
+  isCorrect      Boolean?
+  createdAt      DateTime   @default(now()) @db.Timestamptz
+  updatedAt      DateTime   @updatedAt @db.Timestamptz
+  
+  // Relations
+  assessment     Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  question       Question   @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  
+  // Constraints
+  @@unique([assessmentId, questionId])
+  @@unique([assessmentId, sequence])
+  @@index([assessmentId])
+  @@index([questionId])
+}
+
+model UserPreference {
+  id             String     @id @default(cuid())
+  level          QuestionLevel
+  allowedTypes   QuestionType[]  
+  totalQuestions Int
+  userId         String     @map("user_id")
+  createdAt      DateTime   @default(now()) @db.Timestamptz
+  updatedAt      DateTime   @updatedAt @db.Timestamptz
+  
+  // Relations
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Constraints
+  @@unique([userId])
+  @@index([userId])
 }
