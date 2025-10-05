@@ -61,7 +61,7 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const { title, slug, tags, status, categoryIds, sequences } = await request.json();
+    const { title, slug, tags, status, readingTime, categoryIds, sequences } = await request.json();
 
     if (!title || !slug) {
       return NextResponse.json(
@@ -106,7 +106,8 @@ export async function PUT(
           title,
           slug,
           tags: tags || [],
-          status: status || 'DRAFT'
+          status: status || 'DRAFT',
+          readingTime: readingTime || 5
         }
       });
 

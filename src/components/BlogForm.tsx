@@ -41,6 +41,7 @@ interface BlogFormProps {
     slug: string;
     tags: string[];
     status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+    readingTime?: number;
     categories: Category[];
     sequences: BlogSequence[];
   };
@@ -54,6 +55,7 @@ export default function BlogForm({ initialData, isEditing = false }: BlogFormPro
   const [status, setStatus] = useState<'DRAFT' | 'PUBLISHED' | 'ARCHIVED'>(
     initialData?.status || 'DRAFT'
   );
+  const [readingTime, setReadingTime] = useState<number>(initialData?.readingTime || 5);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(() => {
     const initialCategoryIds = initialData?.categories?.map(c => c.id) || [];
     return initialCategoryIds;
@@ -286,6 +288,7 @@ export default function BlogForm({ initialData, isEditing = false }: BlogFormPro
           slug,
           tags,
           status,
+          readingTime,
           authorId: user?.id,
           categoryIds: selectedCategories,
           sequences: sequences.map(seq => ({
@@ -432,6 +435,27 @@ export default function BlogForm({ initialData, isEditing = false }: BlogFormPro
                   <option value="PUBLISHED">Published</option>
                   <option value="ARCHIVED">Archived</option>
                 </select>
+              </div>
+
+              {/* Reading Time */}
+              <div>
+                <label htmlFor="readingTime" className="block text-sm font-medium text-gray-700 mb-2">
+                  Reading Time (minutes)
+                </label>
+                <input
+                  type="number"
+                  id="readingTime"
+                  min="1"
+                  max="120"
+                  value={readingTime}
+                  onChange={(e) => setReadingTime(parseInt(e.target.value) || 5)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="5"
+                  disabled={isSubmitting}
+                />
+                <p className="mt-1 text-sm text-gray-500">
+                  Estimated reading time in minutes (1-120)
+                </p>
               </div>
 
               {/* Categories */}

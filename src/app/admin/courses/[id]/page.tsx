@@ -12,13 +12,13 @@ interface Course {
   subjectType: SubjectType;
   status: CourseStatus;
   createdAt: string;
-  chapterTopics: Array<{
+  chapterTopics?: Array<{
     id: string;
     name: string;
     description: string;
     sequenceNumber: number;
   }>;
-  _count: {
+  _count?: {
     chapterTopics: number;
   };
 }
@@ -61,7 +61,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
   const fetchCourse = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/courses/${resolvedParams.id}`);
+      const response = await fetch(`/api/admin/courses/${resolvedParams.id}`);
       
       if (!response.ok) {
         if (response.status === 404) {
@@ -70,12 +70,37 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
         throw new Error('Failed to fetch course');
       }
       
-      const data = await response.json();
-      setCourse(data);
+      const result = await response.json();
+      if (result.success) {
+        setCourse(result.data);
+      } else {
+        throw new Error(result.error || 'Failed to fetch course');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch course');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteChapter = async (chapterId: string, chapterName: string) => {
+    if (!confirm(`Are you sure you want to delete the chapter "${chapterName}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/courses/${resolvedParams.id}/chapters/${chapterId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete chapter');
+      }
+
+      // Refresh the course data after deletion
+      await fetchCourse();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete chapter');
     }
   };
 
@@ -214,7 +239,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
               <div>
                 <h2 className="text-xl font-semibold text-gray-900">Chapters</h2>
                 <p className="text-gray-600 text-sm">
-                  {course._count.chapterTopics} chapter{course._count.chapterTopics !== 1 ? 's' : ''}
+                  {course.chapterTopics?.length || 0} chapter{(course.chapterTopics?.length || 0) !== 1 ? 's' : ''}
                 </p>
               </div>
               <button
@@ -228,7 +253,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
           </div>
           
           <div className="p-6">
-            {course.chapterTopics.length === 0 ? (
+            {(course.chapterTopics?.length || 0) === 0 ? (
               <div className="text-center py-12">
                 <div className="text-gray-400 text-6xl mb-4">📖</div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No chapters yet</h3>
@@ -243,7 +268,7 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
               </div>
             ) : (
               <div className="space-y-4">
-                {course.chapterTopics
+                {(course.chapterTopics || [])
                   .sort((a, b) => a.sequenceNumber - b.sequenceNumber)
                   .map((chapter, index) => (
                   <div key={chapter.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
@@ -257,18 +282,36 @@ export default function CourseDetailPage({ params }: { params: Promise<{ id: str
                           <p className="text-gray-600 text-sm mt-1">{chapter.description}</p>
                         </div>
                       </div>
-                      <div className="flex space-x-2">
+                      <div className="flex space-x-3 items-center">
                         <button
                           onClick={() => router.push(`/admin/courses/${resolvedParams.id}/chapters/${chapter.id}/edit`)}
-                          className="text-blue-600 hover:text-blue-900 text-sm"
+                          className="text-blue-600 hover:text-blue-900 text-sm flex items-center"
+                          title="Edit chapter"
                         >
-                          Edit
+                          <Edit className="w-4 h-4 mr-1" />
+                          <span>Edit</span>
                         </button>
                         <button
                           onClick={() => router.push(`/admin/courses/${resolvedParams.id}/chapters/${chapter.id}`)}
-                          className="text-green-600 hover:text-green-900 text-sm"
+                          className="text-green-600 hover:text-green-900 text-sm flex items-center"
+                          title="View chapter"
                         >
-                          View
+                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                          <span>View</span>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteChapter(chapter.id, chapter.name);
+                          }}
+                          className="text-red-600 hover:text-red-900 text-sm flex items-center"
+                          title="Delete chapter"
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          <span>Delete</span>
                         </button>
                       </div>
                     </div>

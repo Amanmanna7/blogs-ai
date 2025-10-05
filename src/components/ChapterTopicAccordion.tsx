@@ -41,6 +41,7 @@ interface ChapterTopicAccordionProps {
     createdAt: string;
     updatedAt: string;
   }[];
+  readingTime?: number;
 }
 
 const subjectTypeColors = {
@@ -74,7 +75,8 @@ export default function ChapterTopicAccordion({
   completedBlogs = 0,
   totalBlogs = 0,
   blogProgress = [],
-  assessments = []
+  assessments = [],
+  readingTime = 0
 }: ChapterTopicAccordionProps) {
   const [isExpanded, setIsExpanded] = useState(isOpen);
   const colors = subjectTypeColors[subjectType];
@@ -98,10 +100,15 @@ export default function ChapterTopicAccordion({
               <h3 className="text-xl font-bold text-gray-900 mb-1">
                 {chapterTopic.name}
               </h3>
-              <div className="flex items-center space-x-4">
-                <p className="text-gray-600 text-sm">
-                  {chapterTopic.blogs.length} lesson{chapterTopic.blogs.length !== 1 ? 's' : ''}
-                </p>
+              <div className="flex items-center justify-between space-x-4">
+                {readingTime > 0 && (
+                  <div className="flex items-center space-x-1 text-gray-500 text-sm">
+                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>~{readingTime} min</span>
+                  </div>
+                )}
                 {totalBlogs > 0 && (
                   <div className="flex items-center space-x-2">
                     <span className="text-sm text-gray-600">
@@ -154,9 +161,10 @@ export default function ChapterTopicAccordion({
         <div className="px-6 pb-6">
           {/* Chapter Description */}
           <div className={`mt-4 mb-6 p-4 rounded-lg bg-gradient-to-r ${colors.description} border`}>
-            <p className="text-gray-700 leading-relaxed">
-              {chapterTopic.description}
-            </p>
+            <div 
+              className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
+              dangerouslySetInnerHTML={{ __html: chapterTopic.description }}
+            />
           </div>
 
           {/* Blog List */}

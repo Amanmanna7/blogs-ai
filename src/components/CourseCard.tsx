@@ -11,6 +11,7 @@ interface CourseCardProps {
     subjectType: 'ACADEMIC' | 'TECHNICAL' | 'CREATIVE' | 'BUSINESS' | 'OTHER';
     chapterTopicCount: number;
     createdAt: string;
+    latestCompletedBlogTime: string | null;
     progress?: {
       completedBlogs: number;
       totalBlogs: number;

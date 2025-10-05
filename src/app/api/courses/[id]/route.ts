@@ -51,7 +51,8 @@ export async function GET(
                     title: true,
                     slug: true,
                     publishedAt: true,
-                    status: true
+                    status: true,
+                    readingTime: true
                   }
                 }
               },
@@ -114,6 +115,11 @@ export async function GET(
 
     const totalBlogsInCourse = course.chapterTopics.reduce((sum, chapter) => sum + chapter.blogRelations.length, 0);
     const completedBlogsInCourse = course.chapterTopics.reduce((sum, chapter) => sum + chapter.blogProgress.filter(bp => bp.status === 'COMPLETED').length, 0);
+    const readingTimeInCourse = course.chapterTopics.reduce((sum, chapter) => sum + chapter.blogRelations.reduce((blogSum, blog) => blogSum + blog.blog.readingTime, 0), 0);
+    const chapterWiseReadingTime = course.chapterTopics.map((chapter) => ({
+      id: chapter.id,
+      readingTime: chapter.blogRelations.reduce((blogSum, blog) => blogSum + blog.blog.readingTime, 0)
+    }));
 
     const chaptersWithProgress = course.chapterTopics.map((chapter) => ({
       id: chapter.id,
@@ -133,6 +139,8 @@ export async function GET(
     // Transform the data to include only published blogs and sort them properly
     const transformedCourse = {
       ...course,
+      readingTimeInCourse: readingTimeInCourse,
+      chapterWiseReadingTime: chapterWiseReadingTime,
       progress: progressResponse,
       chapterTopics: course.chapterTopics.map((topic, index) => ({
         ...topic,

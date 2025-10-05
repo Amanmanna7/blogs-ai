@@ -271,8 +271,8 @@ export default function CourseTable({
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[course.status]}`}>
-                        {courseStatusLabels[course.status]}
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[course.status as keyof typeof statusColors]}`}>
+                        {courseStatusLabels[course.status as keyof typeof courseStatusLabels]}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

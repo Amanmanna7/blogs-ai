@@ -12,6 +12,11 @@ interface Course {
   description: string;
   subjectType: 'ACADEMIC' | 'TECHNICAL' | 'CREATIVE' | 'BUSINESS' | 'OTHER';
   updatedAt: string;
+  readingTimeInCourse?: number;
+  chapterWiseReadingTime?: {
+    id: string;
+    readingTime: number;
+  }[];
   chapterTopics: {
     id: string;
     name: string;
@@ -79,29 +84,6 @@ export default function CourseDetailPage() {
         const data: ApiResponse = await response.json();
         
         if (data.success) {
-          // try {
-          //   const progressResponse = await fetch(`/api/progress?courseId=${courseId}`);
-          //   if (progressResponse.ok) {
-          //     const progressData = await progressResponse.json();
-          //     if (progressData.success) {
-          //       setCourse({
-          //         ...data.data,
-          //         progress: {
-          //           completedBlogs: progressData.data.completedBlogs,
-          //           totalBlogs: progressData.data.totalBlogs,
-          //           progressPercentage: progressData.data.progressPercentage,
-          //           chapters: progressData.data.chapters
-          //         }
-          //       });
-          //       return;
-          //     }
-          //   }
-          // } catch (progressError) {
-          //   console.error('Failed to fetch progress:', progressError);
-          // }
-
-          console.log('data.data', data.data);
-          
           setCourse(data.data);
         } else {
           setError(data.error || 'Failed to fetch course');
@@ -172,7 +154,7 @@ export default function CourseDetailPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Course Header */}
         <div className="mb-12">
-          <CourseHeader course={course} />
+          <CourseHeader course={course} readingTimeInCourse={course.readingTimeInCourse} />
         </div>
 
 
@@ -207,6 +189,7 @@ export default function CourseDetailPage() {
                     totalBlogs={course.progress?.chapters.find(c => c.id === chapterTopic.id)?.totalBlogs || 0}
                     blogProgress={course.progress?.chapters.find(c => c.id === chapterTopic.id)?.blogProgress || []}
                     assessments={course.assessments?.filter(a => a.chapterTopicId === chapterTopic.id) || []}
+                    readingTime={course.chapterWiseReadingTime?.find(c => c.id === chapterTopic.id)?.readingTime || 0}
                   />
                 </div>
               ))}

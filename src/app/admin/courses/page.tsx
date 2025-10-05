@@ -20,40 +20,24 @@ interface Course {
 
 export default function CoursesPage() {
   const [showForm, setShowForm] = useState(false);
-  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const router = useRouter();
 
   const handleCreateNew = () => {
-    setEditingCourse(null);
     setShowForm(true);
   };
 
   const handleEdit = (course: Course) => {
-    setEditingCourse(course);
-    setShowForm(true);
+    router.push(`/admin/courses/${course.id}/edit`);
   };
 
   const handleView = (course: Course) => {
     router.push(`/admin/courses/${course.id}`);
   };
 
-  const handleFormSuccess = () => {
-    setShowForm(false);
-    setEditingCourse(null);
-    // The CourseTable will automatically refresh
-  };
-
-  const handleFormCancel = () => {
-    setShowForm(false);
-    setEditingCourse(null);
-  };
 
   if (showForm) {
     return (
-      <CourseForm
-        initialData={editingCourse || undefined}
-        isEditing={!!editingCourse}
-      />
+      <CourseForm />
     );
   }
 

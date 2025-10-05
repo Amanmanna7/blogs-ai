@@ -41,6 +41,7 @@ interface Blog {
   title: string;
   slug: string;
   tags: string[];
+  readingTime: number;
   status: string;
   createdAt: string;
   updatedAt: string;

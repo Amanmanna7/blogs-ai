@@ -47,7 +47,7 @@ export async function GET() {
 // POST /api/blogs - Create a new blog
 export async function POST(request: NextRequest) {
   try {
-    const { title, slug, tags, status, authorId, categoryIds, sequences } = await request.json();
+    const { title, slug, tags, status, readingTime, authorId, categoryIds, sequences } = await request.json();
 
     if (!title || !slug || !authorId) {
       return NextResponse.json(
@@ -75,6 +75,7 @@ export async function POST(request: NextRequest) {
         slug,
         tags: tags || [],
         status: status || 'DRAFT',
+        readingTime: readingTime || 5,
         authorId,
         categories: {
           create: (categoryIds || []).map((categoryId: string) => ({

@@ -20,6 +20,7 @@ interface CourseHeaderProps {
       progressPercentage: number;
     };
   };
+  readingTimeInCourse?: number;
 }
 
 const subjectTypeColors = {
@@ -76,7 +77,7 @@ const subjectTypeLabels = {
   OTHER: 'Other'
 };
 
-export default function CourseHeader({ course }: CourseHeaderProps) {
+export default function CourseHeader({ course, readingTimeInCourse }: CourseHeaderProps) {
   // Get the first blog from the first chapter
   const getFirstBlogSlug = () => {
     if (course.chapterTopics && course.chapterTopics.length > 0) {
@@ -120,6 +121,14 @@ export default function CourseHeader({ course }: CourseHeaderProps) {
                 </svg>
                 <span>Last updated: {new Date(course.updatedAt).toLocaleDateString()}</span>
               </div>
+              {readingTimeInCourse && (
+                <div className="flex items-center space-x-2">
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>~{readingTimeInCourse} min read</span>
+                </div>
+              )}
             </div>
           </div>
           

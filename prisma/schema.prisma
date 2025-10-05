@@ -138,6 +138,7 @@ model Blog {
   title                           String
   slug                            String         @unique
   tags                            String[]
+  readingTime                     Int            @default(5) @map("reading_time") // Reading time in minutes
   publishedAt                     DateTime?      @map("published_at") @db.Timestamptz
   status                          BlogStatus     @default(DRAFT)
   meta                            Json           @default("{}")

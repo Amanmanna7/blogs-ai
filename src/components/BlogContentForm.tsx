@@ -651,7 +651,7 @@ function MenuBar({ editor }: { editor: any }) {
               <div className="flex space-x-1">
                 <button
                   onClick={() => {
-                    editor.chain().focus().setTableAttribute('class', 'table-bordered').run();
+                    editor.chain().focus().updateAttributes('table', { class: 'table-bordered' }).run();
                     setShowTableStyles(false);
                   }}
                   className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100"
@@ -661,7 +661,7 @@ function MenuBar({ editor }: { editor: any }) {
                 </button>
                 <button
                   onClick={() => {
-                    editor.chain().focus().setTableAttribute('class', 'table-borderless').run();
+                    editor.chain().focus().updateAttributes('table', { class: 'table-borderless' }).run();
                     setShowTableStyles(false);
                   }}
                   className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100"
@@ -678,7 +678,7 @@ function MenuBar({ editor }: { editor: any }) {
               <div className="grid grid-cols-2 gap-1">
                 <button
                   onClick={() => {
-                    editor.chain().focus().setTableAttribute('class', 'table-default').run();
+                    editor.chain().focus().updateAttributes('table', { class: 'table-default' }).run();
                     setShowTableStyles(false);
                   }}
                   className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100"
@@ -688,7 +688,7 @@ function MenuBar({ editor }: { editor: any }) {
                 </button>
                 <button
                   onClick={() => {
-                    editor.chain().focus().setTableAttribute('class', 'table-striped').run();
+                    editor.chain().focus().updateAttributes('table', { class: 'table-striped' }).run();
                     setShowTableStyles(false);
                   }}
                   className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100"
@@ -698,7 +698,7 @@ function MenuBar({ editor }: { editor: any }) {
                 </button>
                 <button
                   onClick={() => {
-                    editor.chain().focus().setTableAttribute('class', 'table-hover').run();
+                    editor.chain().focus().updateAttributes('table', { class: 'table-hover' }).run();
                     setShowTableStyles(false);
                   }}
                   className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100"
@@ -708,7 +708,7 @@ function MenuBar({ editor }: { editor: any }) {
                 </button>
                 <button
                   onClick={() => {
-                    editor.chain().focus().setTableAttribute('class', 'table-dark').run();
+                    editor.chain().focus().updateAttributes('table', { class: 'table-dark' }).run();
                     setShowTableStyles(false);
                   }}
                   className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100"
@@ -725,7 +725,7 @@ function MenuBar({ editor }: { editor: any }) {
               <div className="grid grid-cols-2 gap-1">
                 <button
                   onClick={() => {
-                    editor.chain().focus().setCellAttribute('style', 'background-color: #f8f9fa').run();
+                    editor.chain().focus().updateAttributes('tableCell', { style: 'background-color: #f8f9fa' }).run();
                     setShowTableStyles(false);
                   }}
                   className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100"
@@ -735,7 +735,7 @@ function MenuBar({ editor }: { editor: any }) {
                 </button>
                 <button
                   onClick={() => {
-                    editor.chain().focus().setCellAttribute('style', 'background-color: #e9ecef').run();
+                    editor.chain().focus().updateAttributes('tableCell', { style: 'background-color: #e9ecef' }).run();
                     setShowTableStyles(false);
                   }}
                   className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100"
@@ -745,7 +745,7 @@ function MenuBar({ editor }: { editor: any }) {
                 </button>
                 <button
                   onClick={() => {
-                    editor.chain().focus().setCellAttribute('style', 'background-color: #dee2e6').run();
+                    editor.chain().focus().updateAttributes('tableCell', { style: 'background-color: #dee2e6' }).run();
                     setShowTableStyles(false);
                   }}
                   className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100"
@@ -755,7 +755,7 @@ function MenuBar({ editor }: { editor: any }) {
                 </button>
                 <button
                   onClick={() => {
-                    editor.chain().focus().setCellAttribute('style', 'background-color: transparent').run();
+                    editor.chain().focus().updateAttributes('tableCell', { style: 'background-color: transparent' }).run();
                     setShowTableStyles(false);
                   }}
                   className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100"
@@ -942,15 +942,48 @@ export default function BlogContentForm({
           class: 'bg-gray-900 text-gray-100 rounded-lg p-4 my-4 overflow-x-auto font-mono text-sm',
         },
       }),
-      Table.configure({
-        resizable: true,
-        HTMLAttributes: {
-          class: 'table-auto border-collapse',
+      Table.extend({
+        addAttributes() {
+          return {
+            ...this.parent?.(),
+            class: {
+              default: 'table-auto border-collapse',
+              parseHTML: element => element.getAttribute('class'),
+              renderHTML: attributes => {
+                if (!attributes.class) {
+                  return {};
+                }
+                return {
+                  class: attributes.class,
+                };
+              },
+            },
+          };
         },
+      }).configure({
+        resizable: true,
       }),
       TableRow,
       TableHeader,
-      TableCell,
+      TableCell.extend({
+        addAttributes() {
+          return {
+            ...this.parent?.(),
+            style: {
+              default: null,
+              parseHTML: element => element.getAttribute('style'),
+              renderHTML: attributes => {
+                if (!attributes.style) {
+                  return {};
+                }
+                return {
+                  style: attributes.style,
+                };
+              },
+            },
+          };
+        },
+      }),
       HorizontalRule,
       Subscript,
       Superscript,
