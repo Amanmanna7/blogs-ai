@@ -387,8 +387,8 @@ export default function SubscriptionPlans() {
                     processingPayment === plan.id
                       ? 'bg-gray-400 text-white cursor-not-allowed'
                       : isPopular(plan.name)
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105'
-                      : 'bg-gray-900 text-white hover:bg-gray-800 shadow-lg hover:shadow-xl transform hover:scale-105'
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105 cursor-pointer'
+                      : 'bg-gray-900 text-white hover:bg-gray-800 shadow-lg hover:shadow-xl transform hover:scale-105 cursor-pointer'
                   }`}
                 >
                   {processingPayment === plan.id ? (

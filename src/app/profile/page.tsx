@@ -16,9 +16,12 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
-      router.push('/sign-in');
+      // Preserve the tab parameter in the redirect URL
+      const currentTab = searchParams.get('tab');
+      const redirectUrl = currentTab ? `/sign-in?redirect=/profile?tab=${currentTab}` : '/sign-in?redirect=/profile';
+      router.push(redirectUrl);
     }
-  }, [isLoaded, isSignedIn, router]);
+  }, [isLoaded, isSignedIn, router, searchParams]);
 
   // Handle tab parameter from URL
   useEffect(() => {

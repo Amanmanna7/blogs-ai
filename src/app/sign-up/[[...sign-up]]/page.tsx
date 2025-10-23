@@ -1,6 +1,12 @@
+'use client';
+
 import { SignUp } from '@clerk/nextjs';
+import { useSearchParams } from 'next/navigation';
 
 export default function SignUpPage() {
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get('redirect') || '/courses';
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -14,6 +20,7 @@ export default function SignUpPage() {
         </div>
         <div className="flex justify-center">
           <SignUp 
+            redirectUrl={redirectUrl}
             appearance={{
               elements: {
                 formButtonPrimary: 'bg-blue-600 hover:bg-blue-700 text-white',
