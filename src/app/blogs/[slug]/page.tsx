@@ -289,6 +289,8 @@ export default function BlogPage() {
                 blogTitle={blog?.title || "this content"}
                 isChatOpen={isChatOpen}
                 onChatToggle={setIsChatOpen}
+                blogId={blog?.id}
+                chapterTopicId={chapterId || undefined}
                 className="h-full"
               />
             ) : (

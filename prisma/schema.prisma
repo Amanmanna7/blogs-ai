@@ -97,6 +97,32 @@ enum ProgressStatus {
   ABANDONED
 }
 
+enum PlanStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum UserPlanStatus {
+  ACTIVE
+  PENDING
+  CANCELLED
+  EXPIRED
+}
+
+enum PlanFeatureStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
 // Core Models
 model User {
   id                String         @id @default(cuid())
@@ -117,6 +143,7 @@ model User {
   courseProgress    CourseProgress[]
   assessments       Assessment[]
   userPreferences   UserPreference[]
+  userPlans         UserPlan[]
 }
 
 model BlogContent {
@@ -482,4 +509,72 @@ model UserPreference {
   // Constraints
   @@unique([userId])
   @@index([userId])
+}
+
+// Subscription and Plan Models
+model Plan {
+  id                String         @id @default(cuid())
+  name              String         @map("name")
+  description       String         @map("description")
+  price_per_month   Int            @map("price_per_month")
+  status            PlanStatus     @map("status")
+  createdAt         DateTime       @default(now()) @db.Timestamptz
+  updatedAt         DateTime       @updatedAt @db.Timestamptz
+  features          PlanFeature[]
+  userPlans         UserPlan[]
+}
+
+model PlanFeature {
+  id                String         @id @default(cuid())
+  planId            String         @map("plan_id")
+  feature           String         @map("feature")
+  description       String         @map("description")
+  featureSlug       String         @map("feature_slug")
+  status            PlanFeatureStatus @default(ACTIVE) @map("status")
+  createdAt         DateTime       @default(now()) @db.Timestamptz
+  updatedAt         DateTime       @updatedAt @db.Timestamptz
+  plan              Plan           @relation(fields: [planId], references: [id])
+}
+
+model Discount {
+  id                String         @id @default(cuid())
+  discountCode      String         @map("discount_code")
+  discountAmount    Int            @map("discount_amount")
+  description       String         @map("description")
+  createdAt         DateTime       @default(now()) @db.Timestamptz
+  updatedAt         DateTime       @updatedAt @db.Timestamptz
+  userPlans         UserPlan[]
+}
+
+model UserPlan {
+  id                String         @id @default(cuid())
+  userId            String         @map("user_id")
+  planId            String         @map("plan_id")
+  duration          Int            @map("duration")
+  startDate         DateTime       @map("start_date")
+  endDate           DateTime       @map("end_date")
+  status            UserPlanStatus @map("status")
+  discountId        String?        @map("discount_id")
+  paidAmount        Int            @map("paid_amount")
+  orderId           String         @map("order_id")
+  createdAt         DateTime       @default(now()) @db.Timestamptz
+  updatedAt         DateTime       @updatedAt @db.Timestamptz
+
+  plan              Plan           @relation(fields: [planId], references: [id])
+  user              User           @relation(fields: [userId], references: [id])
+  discount          Discount?      @relation(fields: [discountId], references: [id])
+  payments          UserPlanPayment[]
+}
+
+model UserPlanPayment {
+  id                String         @id @default(cuid())
+  userPlanId        String         @map("user_plan_id")
+  orderId           String         @map("order_id")
+  paymentId         String         @map("payment_id")
+  status            PaymentStatus @default(PENDING)
+  paymentDetails    Json?          @map("payment_details")
+  createdAt         DateTime       @default(now()) @db.Timestamptz
+  updatedAt         DateTime       @updatedAt @db.Timestamptz
+
+  userPlan          UserPlan       @relation(fields: [userPlanId], references: [id], onDelete: Cascade)
 }

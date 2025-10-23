@@ -24,6 +24,8 @@ export async function GET(request: NextRequest) {
     const courseId = searchParams.get('courseId');
     const chapterTopicId = searchParams.get('chapterTopicId');
 
+    console.log('search params', searchParams);
+
     // Build where clause based on provided parameters
     const where: any = {
       userId: dbUser.id,

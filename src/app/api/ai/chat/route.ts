@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
+import { getMessageLimit, getMessageLimitFromUserPlan, getLimitStartDate, FeatureSlug } from '@/types/messaging-limits';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -22,7 +23,8 @@ export async function POST(request: NextRequest) {
       blogId, 
       courseId, 
       chapterTopicId,
-      isFirstMessage = false 
+      isFirstMessage = false,
+      featureSlug = FeatureSlug.AI_CHAT
     } = await request.json();
 
     if (!messages || !Array.isArray(messages)) {
@@ -32,55 +34,85 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check message limits for users without active plans
+    const dbUser = await prisma.user.findUnique({
+      where: { clerkUserId: userId }
+    });
+
+    if (!dbUser) {
+      return NextResponse.json(
+        { error: 'User not found. Please refresh the page and try again.' },
+        { status: 404 }
+      );
+    }
+
+    // Check if user has an active plan
+    const currentDate = new Date();
+    const activePlan = await prisma.userPlan.findFirst({
+      where: {
+        userId: dbUser.id,
+        status: 'ACTIVE',
+        startDate: {
+          lte: currentDate
+        },
+        endDate: {
+          gte: currentDate
+        }
+      },
+      include: {
+        plan: {
+          include: {
+            features: true
+          }
+        }
+      }
+    });
+
+    // Get user's plan features if they have an active plan
+    let userPlanFeatures: string[] = [];
+    if (activePlan) {
+      userPlanFeatures = activePlan.plan.features.map(feature => feature.featureSlug);
+    }
+
+    // Get limit configuration based on user's plan features or fallback to requested feature
+    const limitConfig = userPlanFeatures.length > 0 
+      ? getMessageLimitFromUserPlan(userPlanFeatures)
+      : getMessageLimit(featureSlug);
+
+    // Check message limits based on user type and feature
+    if (limitConfig.messageLimit !== -1) {
+      // Get start date based on time period
+      const startDate = getLimitStartDate(limitConfig.timePeriod);
+
+      const messageCount = await prisma.chatMessage.count({
+        where: {
+          sender: 'USER',
+          session: {
+            userId: dbUser.id
+          },
+          createdAt: {
+            gte: startDate
+          }
+        }
+      });
+
+      if (messageCount >= limitConfig.messageLimit) {
+        return NextResponse.json({
+          error: 'MESSAGE_LIMIT_EXCEEDED',
+          message: `You have reached your ${limitConfig.timePeriod} message limit. Upgrade to continue chatting.`,
+          messageLimit: limitConfig.messageLimit,
+          messageCount,
+          remainingMessages: 0,
+          timePeriod: limitConfig.timePeriod
+        }, { status: 429 });
+      }
+    }
+
     let currentSessionId = sessionId;
 
     // Create session if this is the first message and no sessionId provided
     if (isFirstMessage && !sessionId) {
-      // First, ensure the user exists in our database
-      let dbUser = await prisma.user.findUnique({
-        where: { clerkUserId: userId }
-      });
-
-      if (!dbUser) {
-        // User doesn't exist, we need to create them
-        // This should normally be handled by the user sync, but let's handle it here as a fallback
-        try {
-          // Get user data from Clerk
-          const clerkUser = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
-            headers: {
-              'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
-              'Content-Type': 'application/json',
-            },
-          });
-
-          if (clerkUser.ok) {
-            const clerkUserData = await clerkUser.json();
-            const email = clerkUserData.email_addresses?.[0]?.email_address;
-            const name = `${clerkUserData.first_name || ''} ${clerkUserData.last_name || ''}`.trim() || null;
-            const imageUrl = clerkUserData.image_url;
-
-            if (email) {
-              dbUser = await prisma.user.create({
-                data: {
-                  clerkUserId: userId,
-                  email,
-                  name,
-                  imageUrl,
-                }
-              });
-            }
-          }
-        } catch (error) {
-          console.error('Error creating user:', error);
-        }
-
-        if (!dbUser) {
-          return NextResponse.json(
-            { error: 'User not found. Please refresh the page and try again.' },
-            { status: 404 }
-          );
-        }
-      }
+      // User already exists from the limit check above
 
       const newSession = await prisma.chatSession.create({
         data: {

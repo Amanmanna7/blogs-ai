@@ -161,6 +161,11 @@ export default function AdminDashboard() {
       color: 'purple',
       items: [
         {
+          name: 'Plans & Features',
+          href: '/admin/plans',
+          description: 'Manage subscription plans and features'
+        },
+        {
           name: 'System Settings',
           href: '/admin/settings',
           description: 'Configure system settings'

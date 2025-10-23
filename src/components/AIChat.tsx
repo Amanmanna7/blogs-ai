@@ -93,15 +93,20 @@ export default function AIChat({
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
   const [lastAIMessageId, setLastAIMessageId] = useState<string | null>(null);
+  const [messageLimit, setMessageLimit] = useState<number | null>(null);
+  const [remainingMessages, setRemainingMessages] = useState<number | null>(null);
+  const [hasActivePlan, setHasActivePlan] = useState<boolean | null>(null);
+  const [isLimitExceeded, setIsLimitExceeded] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesStartRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Load chat history when chat opens
+  // Load chat history and message limits when chat opens
   useEffect(() => {
     if (isSignedIn && isChatOpen) {
       loadChatHistory();
+      checkMessageLimits();
     }
   }, [isSignedIn, isChatOpen, blogId, courseId, chapterTopicId]);
 
@@ -156,6 +161,24 @@ export default function AIChat({
     }
   };
 
+  // Check message limits
+  const checkMessageLimits = async () => {
+    if (!isSignedIn) return;
+
+    try {
+      const response = await fetch('/api/user-plans/check-limits?feature=ai-chat');
+      if (response.ok) {
+        const data = await response.json();
+        setHasActivePlan(data.hasActivePlan);
+        setMessageLimit(data.messageLimit);
+        setRemainingMessages(data.remainingMessages);
+        setIsLimitExceeded(data.remainingMessages === 0 && !data.hasActivePlan);
+      }
+    } catch (error) {
+      console.error('Error checking message limits:', error);
+    }
+  };
+
   useEffect(() => {
     // Only auto-scroll when not loading history and we have messages
     if (!isLoadingHistory && messages.length > 0) {
@@ -177,7 +200,7 @@ export default function AIChat({
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || isLimitExceeded) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -210,11 +233,28 @@ export default function AIChat({
           blogId: blogId,
           courseId: courseId,
           chapterTopicId: chapterTopicId,
-          isFirstMessage: isFirstMessage
+          isFirstMessage: isFirstMessage,
+          featureSlug: 'ai-chat'
         }),
       });
 
       if (!response.ok) {
+        const errorData = await response.json();
+        
+        // Handle message limit exceeded
+        if (errorData.error === 'MESSAGE_LIMIT_EXCEEDED') {
+          setIsLimitExceeded(true);
+          setRemainingMessages(0);
+          const limitExceededMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
+            content: 'You have reached your message limit. Please upgrade to continue chatting.',
+            timestamp: new Date()
+          };
+          setMessages(prev => [...prev, limitExceededMessage]);
+          return;
+        }
+        
         throw new Error('Failed to get AI response');
       }
 
@@ -234,6 +274,11 @@ export default function AIChat({
       };
 
       setMessages(prev => [...prev, assistantMessage]);
+      
+      // Update remaining messages after successful message
+      if (remainingMessages !== null && remainingMessages > 0) {
+        setRemainingMessages(prev => prev !== null ? prev - 1 : null);
+      }
     } catch (error) {
       console.error('Error getting AI response:', error);
       const errorMessage: Message = {
@@ -277,15 +322,18 @@ export default function AIChat({
       if (courseId) params.append('courseId', courseId);
       if (chapterTopicId) params.append('chapterTopicId', chapterTopicId);
 
-      const response = await fetch(`/api/chat-sessions/last?${params}`);
+      // Use the main chat-sessions route instead of the last route
+      const response = await fetch(`/api/chat-sessions?${params}`);
       if (response.ok) {
         const data = await response.json();
-        if (data.success && data.session) {
-          setSessionId(data.session.id);
+        if (data.success && data.sessions && data.sessions.length > 0) {
+          // Get the most recent session for this specific content
+          const latestSession = data.sessions[0];
+          setSessionId(latestSession.id);
           setIsFirstMessage(false);
           
           // Convert database messages to component format
-          const historyMessages: Message[] = data.messages.map((msg: any) => ({
+          const historyMessages: Message[] = latestSession.messages.map((msg: any) => ({
             id: msg.id,
             role: msg.sender === 'USER' ? 'user' : 'assistant',
             content: msg.message,
@@ -429,12 +477,15 @@ export default function AIChat({
             </div>
           </div>
 
-          <button className="cursor-pointer mt-6 w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-semibold py-3 px-6 rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 flex items-center justify-center gap-2">
+          <a
+            href="/profile?tab=subscription"
+            className="cursor-pointer mt-6 w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-semibold py-3 px-6 rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 flex items-center justify-center gap-2"
+          >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
             </svg>
             Upgrade to AI Premium
-          </button>
+          </a>
         </div>
       </div>
     );
@@ -546,9 +597,31 @@ export default function AIChat({
         
         {/* Bottom row: Status and Actions */}
         <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-600">
-            {messages.length > 0 ? `${messages.length} message${messages.length !== 1 ? 's' : ''}` : 'Ready to help with your learning'}
-          </p>
+          <div className="flex flex-col">
+            <p className="text-sm text-gray-600">
+              {messages.length > 0 ? `${messages.length} message${messages.length !== 1 ? 's' : ''}` : 'Ready to help with your learning'}
+            </p>
+            {/* Message limit display */}
+            {messageLimit !== null && (
+              <p className="text-xs text-gray-500 mt-1">
+                {remainingMessages !== null ? (
+                  hasActivePlan ? (
+                    <span className="text-green-600">
+                      {messageLimit === -1 ? 'Unlimited messages' : `${remainingMessages} of ${messageLimit} messages remaining`}
+                    </span>
+                  ) : remainingMessages > 0 ? (
+                    <span className="text-blue-600">
+                      {remainingMessages} of {messageLimit} messages remaining
+                    </span>
+                  ) : (
+                    <span className="text-red-600">Message limit reached</span>
+                  )
+                ) : (
+                  <span className="text-gray-500">Loading limits...</span>
+                )}
+              </p>
+            )}
+          </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-green-400 animate-pulse"></div>
@@ -674,46 +747,95 @@ export default function AIChat({
 
         {/* Input Area */}
         <div className="border-t border-gray-200 p-4 mt-auto">
-          <form onSubmit={handleSubmit} className="flex gap-3">
-            <div className="flex-1 relative">
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder={placeholder}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200"
-                rows={1}
-                style={{ minHeight: '48px', maxHeight: '120px' }}
-                onInput={(e) => {
-                  const target = e.target as HTMLTextAreaElement;
-                  target.style.height = 'auto';
-                  target.style.height = `${Math.min(target.scrollHeight, 120)}px`;
-                }}
-                disabled={isLoading}
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={!input.trim() || isLoading}
-              className={`cursor-pointer px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2 font-semibold shadow-lg hover:shadow-xl ${
-                input.trim() ? 'hover:scale-105' : ''
-              }`}
-              style={{ 
-                minWidth: input.trim() ? 'auto' : '48px',
-                width: input.trim() ? 'auto' : '48px',
-                height: '48px'
-              }}
-            >
-              {isLoading ? (
-                <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
+          {isLimitExceeded ? (
+            /* Limit Exceeded UI */
+            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-6 text-center">
+              <div className="mb-4">
+                <div className="h-16 w-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-yellow-100 to-orange-100 flex items-center justify-center">
+                  <svg className="h-8 w-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-2">Message Limit Reached</h4>
+                <p className="text-gray-600 text-sm mb-4">
+                  You've used all {messageLimit} free messages. Upgrade to continue chatting with unlimited AI support.
+                </p>
+              </div>
+              
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
+                  <svg className="h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Unlimited AI conversations</span>
+                </div>
+                <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
+                  <svg className="h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Priority AI responses</span>
+                </div>
+                <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
+                  <svg className="h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Advanced AI features</span>
+                </div>
+              </div>
+
+              <a
+                href="/profile?tab=subscription"
+                className="cursor-pointer w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-semibold py-3 px-6 rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 flex items-center justify-center gap-2"
+              >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                 </svg>
-              )}
-            </button>
-          </form>
+                Upgrade to Premium
+              </a>
+            </div>
+          ) : (
+            /* Normal Input Form */
+            <form onSubmit={handleSubmit} className="flex gap-3">
+              <div className="flex-1 relative">
+                <textarea
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder={placeholder}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200"
+                  rows={1}
+                  style={{ minHeight: '48px', maxHeight: '120px' }}
+                  onInput={(e) => {
+                    const target = e.target as HTMLTextAreaElement;
+                    target.style.height = 'auto';
+                    target.style.height = `${Math.min(target.scrollHeight, 120)}px`;
+                  }}
+                  disabled={isLoading}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={!input.trim() || isLoading}
+                className={`cursor-pointer px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2 font-semibold shadow-lg hover:shadow-xl ${
+                  input.trim() ? 'hover:scale-105' : ''
+                }`}
+                style={{ 
+                  minWidth: input.trim() ? 'auto' : '48px',
+                  width: input.trim() ? 'auto' : '48px',
+                  height: '48px'
+                }}
+              >
+                {isLoading ? (
+                  <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                  </svg>
+                )}
+              </button>
+            </form>
+          )}
         </div>
       </div>
     </div>
