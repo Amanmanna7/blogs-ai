@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { QuestionLevel, QuestionType } from '@prisma/client';
+import useQuizLimits from '@/hooks/useQuizLimits';
 
 interface UserPreference {
   id: string;
@@ -56,9 +57,42 @@ export default function AssessmentUserPreference({
   const [allowedTypes, setAllowedTypes] = useState<QuestionType[]>(['MCQ_SINGLE']);
   const [totalQuestions, setTotalQuestions] = useState(5);
 
+  // Quiz limits
+  const { limitData, checkLimits, isValid, errors, loading: limitsLoading } = useQuizLimits();
+  const lastCheckedQuestions = useRef<number | null>(null);
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [userPlan, setUserPlan] = useState<any>(null);
+
   useEffect(() => {
     fetchUserPreference();
+    fetchUserPlan();
+    // Pre-load quiz limits on component mount
+    checkLimits(totalQuestions);
+    lastCheckedQuestions.current = totalQuestions;
   }, []);
+
+  // Check quiz limits when totalQuestions changes with debouncing
+  useEffect(() => {
+    if (totalQuestions >= 3 && lastCheckedQuestions.current !== totalQuestions) {
+      // Clear existing timeout
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+      
+      // Set new timeout
+      debounceTimeout.current = setTimeout(() => {
+        lastCheckedQuestions.current = totalQuestions;
+        checkLimits(totalQuestions);
+      }, 300); // 300ms debounce
+    }
+    
+    // Cleanup timeout on unmount
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    };
+  }, [totalQuestions, checkLimits]);
 
   const fetchUserPreference = async () => {
     try {
@@ -77,6 +111,19 @@ export default function AssessmentUserPreference({
       setError('Failed to load preferences');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUserPlan = async () => {
+    try {
+      const response = await fetch('/api/user-plans/active');
+      const data = await response.json();
+      console.log('data', data);
+      if (data.success) {
+        setUserPlan(data.activePlan);
+      }
+    } catch (error) {
+      console.error('Error fetching user plan:', error);
     }
   };
 
@@ -311,88 +358,233 @@ export default function AssessmentUserPreference({
             </div>
           </div>
 
-          {/* Action Section */}
-          <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200">
-            {quizStarted && !assessmentCreated && (
-              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          {/* Quiz Limits Information */}
+          {limitData && (
+            <div className="mb-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 shadow-sm">
+              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center">
-                  <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center mr-3">
-                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  <div className="w-6 h-6 bg-blue-100 rounded-md flex items-center justify-center mr-2">
+                    <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-blue-800">Generating Quiz...</p>
-                    <p className="text-xs text-blue-600">Please wait while we create your personalized quiz.</p>
-                  </div>
+                  <h4 className="text-base font-semibold text-blue-900">Quiz Limits</h4>
                 </div>
+                {limitsLoading && (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                )}
               </div>
-            )}
-            
-            {assessmentCreated && (
-              <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <div className="flex items-center justify-between">
+              
+              <div className="space-y-2">
+                {/* Quiz Limit */}
+                <div className="flex items-center justify-between p-2 bg-white/60 rounded-md border border-blue-100">
                   <div className="flex items-center">
-                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mr-3">
-                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                      <svg className="w-2 h-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-green-800">Quiz Created Successfully!</p>
-                      <p className="text-xs text-green-600">Your personalized quiz is ready to begin.</p>
+                    <span className="text-blue-800 text-sm font-medium">Quiz Limit</span>
+                  </div>
+                  <span className="text-blue-900 text-sm font-semibold">
+                    {limitData.limitConfig.quizLimit === -1 ? 'Unlimited' : limitData.limitConfig.quizLimit} per {limitData.limitConfig.timePeriod}
+                  </span>
+                </div>
+
+                {/* Used */}
+                <div className="flex items-center justify-between p-2 bg-white/60 rounded-md border border-blue-100">
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 bg-orange-100 rounded-full flex items-center justify-center mr-2">
+                      <svg className="w-2 h-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <span className="text-blue-800 text-sm font-medium">Used</span>
+                  </div>
+                  <span className="text-blue-900 text-sm font-semibold">
+                    {limitData.currentUsage.quizCount} {limitData.currentUsage.quizCount === 1 ? 'quiz' : 'quizzes'}
+                  </span>
+                </div>
+
+                {/* Remaining */}
+                <div className="flex items-center justify-between p-2 bg-white/60 rounded-md border border-blue-100">
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 bg-green-100 rounded-full flex items-center justify-center mr-2">
+                      <svg className="w-2 h-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <span className="text-blue-800 text-sm font-medium">Remaining</span>
+                  </div>
+                  <span className={`text-sm font-semibold ${limitData.validation.remainingQuizzes === 0 ? 'text-red-600' : limitData.validation.remainingQuizzes === -1 ? 'text-green-600' : 'text-blue-900'}`}>
+                    {limitData.validation.remainingQuizzes === -1 ? 'Unlimited' : limitData.validation.remainingQuizzes} {limitData.validation.remainingQuizzes === 1 ? 'quiz' : 'quizzes'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+
+          {/* Exhausted Limits Message for Paid Users */}
+          {userPlan && errors.length > 0 && (
+            <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h4 className="font-medium text-orange-900 mb-1">Daily Limits Exhausted</h4>
+                  <p className="text-sm text-orange-700">
+                    You've reached your daily quiz creation limit. Come back tomorrow to create more quizzes!
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+
+          {/* Action Section */}
+          <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200">
+            {/* Show upgrade card for free users with exhausted limits */}
+            {!userPlan && errors.length > 0 ? (
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-6 text-center">
+                <div className="mb-4">
+                  <div className="h-16 w-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-yellow-100 to-orange-100 flex items-center justify-center">
+                    <svg className="h-8 w-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                  </div>
+                   <h4 className="text-lg font-semibold text-gray-900 mb-2">Quiz Limit Reached</h4>
+                   <p className="text-gray-600 text-sm mb-4">
+                     {userPlan 
+                       ? "You've reached your daily quiz creation limit. Come back tomorrow to continue with your learning journey."
+                       : "You've used all your free quiz creation limit. Upgrade to create unlimited quizzes with advanced features."
+                     }
+                   </p>
+                </div>
+                
+                {!userPlan && (
+                  <>
+                    <div className="space-y-3 mb-6">
+                      <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
+                        <svg className="h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Unlimited quiz creation</span>
+                      </div>
+                      <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
+                        <svg className="h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Advanced question types</span>
+                      </div>
+                      <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
+                        <svg className="h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>AI-powered quiz generation</span>
+                      </div>
+                    </div>
+
+                    <a
+                      href="/profile?tab=subscription"
+                      className="cursor-pointer w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-semibold py-3 px-6 rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all duration-300 hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 flex items-center justify-center gap-2"
+                    >
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                      </svg>
+                      Upgrade to Premium
+                    </a>
+                  </>
+                )}
+              </div>
+            ) : (
+              /* Normal Quiz Generation Section */
+              <>
+                {quizStarted && !assessmentCreated && (
+                  <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center">
+                      <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center mr-3">
+                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-blue-800">Generating Quiz...</p>
+                        <p className="text-xs text-blue-600">Please wait while we create your personalized quiz.</p>
+                      </div>
                     </div>
                   </div>
-                  {assessmentUrl && (
-                    <a
-                      href={assessmentUrl}
-                      className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                      Start Quiz
-                    </a>
-                  )}
+                )}
+                
+                {assessmentCreated && (
+                  <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mr-3">
+                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-green-800">Quiz Created Successfully!</p>
+                          <p className="text-xs text-green-600">Your personalized quiz is ready to begin.</p>
+                        </div>
+                      </div>
+                      {assessmentUrl && (
+                        <a
+                          href={assessmentUrl}
+                          className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
+                        >
+                          Start Quiz
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-1">Generate Assessment</h4>
+                    <p className="text-sm text-gray-600">
+                      {quizStarted ? 'Quiz is being generated...' : 'Your quiz is configured and ready to begin'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={createAssessment}
+                    disabled={generating || quizStarted || !isValid}
+                    className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-3 rounded-xl font-bold text-base hover:from-blue-700 hover:to-blue-800 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="flex items-center">
+                      {generating ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Generating...
+                        </>
+                      ) : assessmentCreated ? (
+                        <>
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          Quiz Created
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h1m4 0h1m-6-8h8a2 2 0 012 2v8a2 2 0 01-2 2H8a2 2 0 01-2-2V6a2 2 0 012-2z" />
+                          </svg>
+                          Start Quiz
+                        </>
+                      )}
+                    </div>
+                  </button>
                 </div>
-              </div>
+              </>
             )}
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-1">Generate Assessment</h4>
-                <p className="text-sm text-gray-600">
-                  {quizStarted ? 'Quiz is being generated...' : 'Your quiz is configured and ready to begin'}
-                </p>
-              </div>
-              <button
-                onClick={createAssessment}
-                disabled={generating || quizStarted}
-                className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-3 rounded-xl font-bold text-base hover:from-blue-700 hover:to-blue-800 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-              >
-                <div className="flex items-center">
-                  {generating ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Generating...
-                    </>
-                  ) : assessmentCreated ? (
-                    <>
-                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      Quiz Created
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h1m4 0h1m-6-8h8a2 2 0 012 2v8a2 2 0 01-2 2H8a2 2 0 01-2-2V6a2 2 0 012-2z" />
-                      </svg>
-                      Start Quiz
-                    </>
-                  )}
-                </div>
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -542,35 +734,123 @@ export default function AssessmentUserPreference({
           <label className="block text-base font-semibold text-gray-900 mb-4">
             Number of Questions
           </label>
+          
+          {/* Quiz Limits Information */}
+          {limitData && (
+            <div className="mb-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 shadow-sm">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center">
+                  <div className="w-6 h-6 bg-blue-100 rounded-md flex items-center justify-center mr-2">
+                    <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                  </div>
+                  <h4 className="text-base font-semibold text-blue-900">Quiz Limits</h4>
+                </div>
+                {limitsLoading && (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                {/* Quiz Limit */}
+                <div className="flex items-center justify-between p-2 bg-white/60 rounded-md border border-blue-100">
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                      <svg className="w-2 h-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </div>
+                    <span className="text-blue-800 text-sm font-medium">Quiz Limit</span>
+                  </div>
+                  <span className="text-blue-900 text-sm font-semibold">
+                    {limitData.limitConfig.quizLimit === -1 ? 'Unlimited' : limitData.limitConfig.quizLimit} per {limitData.limitConfig.timePeriod}
+                  </span>
+                </div>
+
+                {/* Used */}
+                <div className="flex items-center justify-between p-2 bg-white/60 rounded-md border border-blue-100">
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 bg-orange-100 rounded-full flex items-center justify-center mr-2">
+                      <svg className="w-2 h-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <span className="text-blue-800 text-sm font-medium">Used</span>
+                  </div>
+                  <span className="text-blue-900 text-sm font-semibold">
+                    {limitData.currentUsage.quizCount} {limitData.currentUsage.quizCount === 1 ? 'quiz' : 'quizzes'}
+                  </span>
+                </div>
+
+                {/* Remaining */}
+                <div className="flex items-center justify-between p-2 bg-white/60 rounded-md border border-blue-100">
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 bg-green-100 rounded-full flex items-center justify-center mr-2">
+                      <svg className="w-2 h-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <span className="text-blue-800 text-sm font-medium">Remaining</span>
+                  </div>
+                  <span className={`text-sm font-semibold ${limitData.validation.remainingQuizzes === 0 ? 'text-red-600' : limitData.validation.remainingQuizzes === -1 ? 'text-green-600' : 'text-blue-900'}`}>
+                    {limitData.validation.remainingQuizzes === -1 ? 'Unlimited' : limitData.validation.remainingQuizzes} {limitData.validation.remainingQuizzes === 1 ? 'quiz' : 'quizzes'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+
+          {/* Exhausted Limits Message for Paid Users */}
+          {userPlan && errors.length > 0 && (
+            <div className="mb-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h4 className="font-medium text-orange-900 mb-1">Daily Limits Exhausted</h4>
+                  <p className="text-sm text-orange-700">
+                    You've reached your daily quiz creation limit. Come back tomorrow to create more quizzes!
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+
           <div className="relative">
             <div className="bg-gray-100 rounded-xl p-4">
               <div className="relative">
                 <input
                   type="range"
                   min="3"
-                  max="10"
-                  value={totalQuestions}
+                  max={limitData?.limitConfig?.questionLimit === -1 ? 10 : Math.min(10, limitData?.limitConfig?.questionLimit || 5)}
+                  value={Math.min(totalQuestions, limitData?.limitConfig?.questionLimit === -1 ? 10 : Math.min(10, limitData?.limitConfig?.questionLimit || 5))}
                   onChange={(e) => setTotalQuestions(parseInt(e.target.value))}
                   className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
                   style={{
-                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((totalQuestions - 3) / 7) * 100}%, #e5e7eb ${((totalQuestions - 3) / 7) * 100}%, #e5e7eb 100%)`
+                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((Math.min(totalQuestions, limitData?.limitConfig?.questionLimit === -1 ? 10 : Math.min(10, limitData?.limitConfig?.questionLimit || 5)) - 3) / (Math.min(10, limitData?.limitConfig?.questionLimit || 5) - 3)) * 100}%, #e5e7eb ${((Math.min(totalQuestions, limitData?.limitConfig?.questionLimit === -1 ? 10 : Math.min(10, limitData?.limitConfig?.questionLimit || 5)) - 3) / (Math.min(10, limitData?.limitConfig?.questionLimit || 5) - 3)) * 100}%, #e5e7eb 100%)`
                   }}
                 />
                 {/* Custom thumb with number inside */}
                 <div 
                   className="absolute top-1/2 transform -translate-y-1/2 w-8 h-8 bg-blue-600 rounded-full border-3 border-white shadow-lg flex items-center justify-center pointer-events-none z-20 transition-all duration-200 hover:scale-110 hover:shadow-xl"
                   style={{
-                    left: `calc(${((totalQuestions - 3) / 7) * 100}% - 16px)`,
+                    left: `calc(${((Math.min(totalQuestions, limitData?.limitConfig?.questionLimit === -1 ? 10 : Math.min(10, limitData?.limitConfig?.questionLimit || 5)) - 3) / (Math.min(10, limitData?.limitConfig?.questionLimit || 5) - 3)) * 100}% - 16px)`,
                     top: '0.75rem'
                   }}
                 >
                   <span className="text-white text-xs font-bold">
-                    {totalQuestions}
+                    {Math.min(totalQuestions, limitData?.limitConfig?.questionLimit === -1 ? 10 : Math.min(10, limitData?.limitConfig?.questionLimit || 5))}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm text-gray-500 mt-2">
                   <span>3</span>
-                  <span>10</span>
+                  <span>{limitData?.limitConfig?.questionLimit === -1 ? 10 : Math.min(10, limitData?.limitConfig?.questionLimit || 5)}</span>
                 </div>
               </div>
             </div>
@@ -590,7 +870,7 @@ export default function AssessmentUserPreference({
           )}
           <button
             type="submit"
-            disabled={saving || allowedTypes.length === 0 || quizStarted}
+            disabled={saving || allowedTypes.length === 0 || quizStarted || !isValid}
             className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
           >
             {saving ? (

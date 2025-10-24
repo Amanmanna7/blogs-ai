@@ -3,6 +3,11 @@ import { prisma } from '@/lib/prisma';
 import { withAuth } from '@/lib/auth';
 import { QuestionLevel, QuestionType, AssessmentStatus } from '@prisma/client';
 import OpenAI from 'openai';
+import { 
+  getQuizLimitFromUserPlan, 
+  getLimitStartDate, 
+  validateQuizCreation 
+} from '@/types/quiz-limits';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -110,6 +115,72 @@ export async function POST(req: NextRequest) {
         return Response.json(
           { success: false, error: 'Total questions must be between 3 and 10' },
           { status: 400 }
+        );
+      }
+
+      // Check quiz limits before creating assessment
+      const userPlan = await prisma.userPlan.findFirst({
+        where: { 
+          userId: user.id,
+          status: 'ACTIVE'
+        },
+        include: {
+          plan: {
+            include: {
+              features: true
+            }
+          }
+        }
+      });
+
+      const userPlanFeatures = userPlan?.plan?.features?.map(f => f.featureSlug) || [];
+      const limitConfig = getQuizLimitFromUserPlan(userPlanFeatures);
+      const startDate = getLimitStartDate(limitConfig.timePeriod);
+      
+      // Count existing assessments and questions
+      const quizCount = await prisma.assessment.count({
+        where: {
+          userId: user.id,
+          createdAt: {
+            gte: startDate
+          }
+        }
+      });
+      
+      const questionCount = await prisma.assessmentQuestion.count({
+        where: {
+          assessment: {
+            userId: user.id,
+            createdAt: {
+              gte: startDate
+            }
+          }
+        }
+      });
+      
+      // Validate quiz creation
+      const validation = validateQuizCreation(
+        quizCount, 
+        limitConfig
+      );
+      
+      if (!validation.canCreateQuiz) {
+        return Response.json(
+          { 
+            success: false, 
+            error: 'Quiz creation limit exceeded',
+            details: validation.errors,
+            limits: {
+              limitConfig,
+              currentUsage: {
+                quizCount
+              },
+              remaining: {
+                quizzes: validation.remainingQuizzes
+              }
+            }
+          },
+          { status: 403 }
         );
       }
 
