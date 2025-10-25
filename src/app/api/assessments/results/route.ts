@@ -42,7 +42,8 @@ export async function GET(req: NextRequest) {
           },
           chapterTopic: {
             select: { id: true }
-          }
+          },
+          feedback: true
         },
         orderBy: { updatedAt: 'desc' }
       });
