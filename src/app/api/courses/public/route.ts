@@ -58,6 +58,9 @@ export async function GET(request: NextRequest) {
               }
             },
             blogProgress: {
+              where: {
+                userId: userId || '',
+              },
               select: {
                 status: true,
                 completedAt: true,
