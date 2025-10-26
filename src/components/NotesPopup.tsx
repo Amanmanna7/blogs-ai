@@ -14,7 +14,7 @@ import {
   Edit3
 } from 'lucide-react';
 import NotesEditor from './NotesEditor';
-import { Note, getNotes, saveNote, deleteNote /* updateLastOpened */ } from '@/lib/notes-storage';
+import { Note, getNotes, saveNote, deleteNote, syncNotesToDatabase, hasUnsavedChanges, markAsSynced, loadNotesHybrid, debugNotesStorage /* updateLastOpened */ } from '@/lib/notes-storage';
 import '@/styles/notes.css';
 
 interface NotesPopupProps {
@@ -78,25 +78,71 @@ export default function NotesPopup({ isOpen, onClose }: NotesPopupProps) {
     const defaultSize = getDefaultSize();
     return { ...defaultSize, isMinimized: false, sidebarCollapsed: false };
   });
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [hasUnsavedChangesState, setHasUnsavedChangesState] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editingTitle, setEditingTitle] = useState('');
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [needsSync, setNeedsSync] = useState(false);
   const rndRef = useRef<Rnd>(null);
 
-  // Load notes on mount
+  // Load notes on mount using hybrid approach
   useEffect(() => {
     if (isOpen) {
-      const loadedNotes = getNotes();
-      setNotes(loadedNotes);
+      const loadNotes = async () => {
+        try {
+          console.log('Loading notes with hybrid approach...');
+          
+          // Debug localStorage state
+          debugNotesStorage();
+          
+          const { notes: loadedNotes, needsSync: syncNeeded } = await loadNotesHybrid();
+          console.log('Loaded notes:', loadedNotes.length, 'needsSync:', syncNeeded);
+          setNotes(loadedNotes);
+          setNeedsSync(syncNeeded);
+          
+          if (loadedNotes.length > 0 && !currentNote) {
+            console.log('Setting current note to first note:', loadedNotes[0].title);
+            setCurrentNote(loadedNotes[0]);
+            // Don't update lastOpenedAt when popup is first opened
+            // Only update when user manually selects a note
+          } else if (loadedNotes.length === 0) {
+            console.log('No notes found, creating a new one');
+            // Create a new note if none exist
+            const newNote = saveNote({
+              id: `note-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              title: 'Untitled Note',
+              content: '<p>Start writing your note...</p>',
+            });
+            setCurrentNote(newNote);
+            setNotes([newNote]);
+          }
+        } catch (error) {
+          console.error('Error loading notes:', error);
+          // Fallback to localStorage only
+          const fallbackNotes = getNotes();
+          console.log('Fallback notes:', fallbackNotes.length);
+          setNotes(fallbackNotes);
+          setNeedsSync(true);
+          
+          if (fallbackNotes.length > 0 && !currentNote) {
+            setCurrentNote(fallbackNotes[0]);
+          }
+        }
+      };
       
-      if (loadedNotes.length > 0 && !currentNote) {
-        setCurrentNote(loadedNotes[0]);
-        // Don't update lastOpenedAt when popup is first opened
-        // Only update when user manually selects a note
-      }
+      loadNotes();
     }
-  }, [isOpen, currentNote]);
+  }, [isOpen]); // Removed currentNote dependency to prevent infinite loops
+
+  // Check for unsaved changes on initial load
+  useEffect(() => {
+    if (isOpen) {
+      const hasChanges = hasUnsavedChanges();
+      setHasUnsavedChangesState(hasChanges);
+    }
+  }, [isOpen]);
 
   // Save popup state to localStorage
   useEffect(() => {
@@ -144,18 +190,17 @@ export default function NotesPopup({ isOpen, onClose }: NotesPopupProps) {
     
     setNotes(prev => [newNote, ...prev]);
     setCurrentNote(newNote);
-    setHasUnsavedChanges(false);
+    setHasUnsavedChangesState(true);
   };
 
   const handleSelectNote = (note: Note) => {
-    if (hasUnsavedChanges && currentNote) {
+    if (hasUnsavedChangesState && currentNote) {
       // Save current note before switching
       handleSaveNote(currentNote.content);
     }
     
     setCurrentNote(note);
     // updateLastOpened(note.id); // Commented out - rearrange functionality disabled
-    setHasUnsavedChanges(false);
     setIsEditingTitle(false);
   };
 
@@ -170,7 +215,6 @@ export default function NotesPopup({ isOpen, onClose }: NotesPopupProps) {
     
     setNotes(prev => prev.map(n => n.id === updatedNote.id ? updatedNote : n));
     setCurrentNote(updatedNote);
-    setHasUnsavedChanges(false);
   };
 
   const handleDeleteNote = (noteId: string) => {
@@ -229,6 +273,39 @@ export default function NotesPopup({ isOpen, onClose }: NotesPopupProps) {
 
   const handleClose = () => {
     onClose();
+  };
+
+  const handleSyncToDatabase = async () => {
+    setIsSyncing(true);
+    setSyncStatus('idle');
+    
+    try {
+      const result = await syncNotesToDatabase();
+      
+      if (result.success) {
+        setSyncStatus('success');
+        markAsSynced();
+        setHasUnsavedChangesState(false);
+        setNeedsSync(false);
+        
+        // Show success message briefly
+        setTimeout(() => setSyncStatus('idle'), 2000);
+      } else {
+        setSyncStatus('error');
+        console.error('Sync failed:', result.error);
+        
+        // Show error message briefly
+        setTimeout(() => setSyncStatus('idle'), 3000);
+      }
+    } catch (error) {
+      setSyncStatus('error');
+      console.error('Sync error:', error);
+      
+      // Show error message briefly
+      setTimeout(() => setSyncStatus('idle'), 3000);
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   const handleMinimize = () => {
@@ -340,7 +417,7 @@ export default function NotesPopup({ isOpen, onClose }: NotesPopupProps) {
         <div className="notes-header-title">
           <StickyNote size={16} />
           <span>Notes</span>
-          {hasUnsavedChanges && (
+          {(hasUnsavedChangesState || needsSync) && (
             <span className="text-orange-500 text-xs">•</span>
           )}
         </div>
@@ -376,6 +453,16 @@ export default function NotesPopup({ isOpen, onClose }: NotesPopupProps) {
           )}
         </div>
         <div className="notes-header-controls">
+          {(hasUnsavedChangesState || needsSync) && (
+            <button
+              onClick={handleSyncToDatabase}
+              className={`notes-save-btn ${syncStatus === 'success' ? 'sync-success' : syncStatus === 'error' ? 'sync-error' : ''}`}
+              title="Save to Database"
+              disabled={isSyncing}
+            >
+              {isSyncing ? 'Saving...' : 'Save'}
+            </button>
+          )}
           <button
             onClick={handleToggleSidebar}
             className="notes-control-btn"
@@ -458,8 +545,10 @@ export default function NotesPopup({ isOpen, onClose }: NotesPopupProps) {
               <NotesEditor
                 content={currentNote.content}
                 onUpdate={(content) => {
-                  setHasUnsavedChanges(true);
+                  setHasUnsavedChangesState(true);
                   setCurrentNote(prev => prev ? { ...prev, content } : null);
+                  handleSaveNote(content);
+                  
                 }}
                 width={popupState.width - (popupState.sidebarCollapsed ? 0 : 200)}
               />

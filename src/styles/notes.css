@@ -262,6 +262,77 @@
   color: #3b82f6;
 }
 
+.notes-control-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.notes-control-btn.sync-success {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+}
+
+.notes-control-btn.sync-error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+/* Save Button */
+.notes-save-btn {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  height: 28px;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+.notes-save-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+  transform: translateY(-1px);
+}
+
+.notes-save-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+.notes-save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.notes-save-btn.sync-success {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  box-shadow: 0 2px 4px rgba(34, 197, 94, 0.2);
+}
+
+.notes-save-btn.sync-success:hover {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  box-shadow: 0 4px 8px rgba(34, 197, 94, 0.3);
+}
+
+.notes-save-btn.sync-error {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+}
+
+.notes-save-btn.sync-error:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+}
+
 /* Notes Content */
 .notes-content {
   display: flex;

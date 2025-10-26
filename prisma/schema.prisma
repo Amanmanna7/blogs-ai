@@ -123,6 +123,13 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum NoteStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+  DELETED
+}
+
 // Core Models
 model User {
   id                String         @id @default(cuid())
@@ -144,6 +151,21 @@ model User {
   assessments       Assessment[]
   userPreferences   UserPreference[]
   userPlans         UserPlan[]
+  userNotes         UserNote[]
+}
+
+model UserNote {
+  id            String     @id @default(cuid())
+  userId        String     @map("user_id")
+  noteTitle     String     @map("note_title")
+  noteContent   String     @map("note_content")
+  status        NoteStatus @default(ACTIVE)
+  lastOpenedAt  DateTime   @default(now()) @map("last_opened_at") @db.Timestamptz
+  createdAt     DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+  
+  // Relations
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model BlogContent {

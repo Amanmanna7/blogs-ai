@@ -7,6 +7,12 @@ export interface Note {
   lastOpenedAt: string;
 }
 
+export interface SyncResult {
+  success: boolean;
+  message: string;
+  error?: string;
+}
+
 const STORAGE_KEY = 'blog-ai-notes';
 
 export const getNotes = (): Note[] => {
@@ -29,7 +35,7 @@ export const saveNote = (note: Omit<Note, 'createdAt' | 'updatedAt' | 'lastOpene
   if (typeof window === 'undefined') {
     throw new Error('localStorage is not available');
   }
-
+  
   const now = new Date().toISOString();
   const notes = getNotes();
   
@@ -121,5 +127,208 @@ export const getStorageSize = (): { used: number; available: number } => {
     return { used, available };
   } catch {
     return { used: 0, available: 0 };
+  }
+};
+
+// Sync functions for database integration
+export const syncNotesToDatabase = async (): Promise<SyncResult> => {
+  try {
+    const notes = getNotes();
+    
+    const response = await fetch('/api/notes/sync', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ notes }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        message: 'Failed to sync notes',
+        error: result.error || 'Unknown error'
+      };
+    }
+
+    return {
+      success: true,
+      message: result.message
+    };
+  } catch (error) {
+    console.error('Error syncing notes to database:', error);
+    return {
+      success: false,
+      message: 'Failed to sync notes',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+};
+
+export const loadNotesFromDatabase = async (): Promise<Note[]> => {
+  try {
+    const response = await fetch('/api/notes/sync', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error('Failed to load notes from database:', result.error);
+      return getNotes(); // Fallback to localStorage
+    }
+
+    // Save to localStorage for offline access
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(result.notes));
+    }
+
+    return result.notes;
+  } catch (error) {
+    console.error('Error loading notes from database:', error);
+    return getNotes(); // Fallback to localStorage
+  }
+};
+
+export const hasUnsavedChanges = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  
+  try {
+    const lastSync = localStorage.getItem('blog-ai-notes-last-sync');
+    const notes = getNotes();
+    
+    if (!lastSync) return notes.length > 0;
+    
+    const lastSyncTime = new Date(lastSync).getTime();
+    const latestNoteTime = Math.max(
+      ...notes.map(note => new Date(note.updatedAt).getTime())
+    );
+    
+    return latestNoteTime > lastSyncTime;
+  } catch (error) {
+    console.error('Error checking for unsaved changes:', error);
+    return false;
+  }
+};
+
+export const markAsSynced = (): void => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('blog-ai-notes-last-sync', new Date().toISOString());
+  }
+};
+
+export const loadNotesHybrid = async (): Promise<{ notes: Note[]; needsSync: boolean }> => {
+  if (typeof window === 'undefined') {
+    return { notes: [], needsSync: false };
+  }
+
+  try {
+    // Get localStorage notes first
+    const localNotes = getNotes();
+    
+    // Try to load from database
+    let dbNotes: Note[] = [];
+    let dbLoadSuccess = false;
+    
+    try {
+      const response = await fetch('/api/notes/sync', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        dbNotes = result.notes || [];
+        dbLoadSuccess = true;
+      }
+    } catch (dbError) {
+      console.error('Database load failed:', dbError);
+    }
+    
+    // If no localStorage data but we have DB data, populate localStorage
+    if (localNotes.length === 0 && dbLoadSuccess && dbNotes.length > 0) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dbNotes));
+      markAsSynced();
+      return { notes: dbNotes, needsSync: false };
+    }
+    
+    // If we have localStorage data, use it and check for sync mismatch
+    if (localNotes.length > 0) {
+      const needsSync = dbLoadSuccess ? checkSyncMismatch(localNotes, dbNotes) : true;
+      return { notes: localNotes, needsSync };
+    }
+    
+    // Fallback: return empty array if no data anywhere
+    return { notes: [], needsSync: false };
+    
+  } catch (error) {
+    console.error('Error in hybrid loading:', error);
+    // Fallback to localStorage only
+    const fallbackNotes = getNotes();
+    return { notes: fallbackNotes, needsSync: true };
+  }
+};
+
+const checkSyncMismatch = (localNotes: Note[], dbNotes: Note[]): boolean => {
+  // If different number of notes, definitely out of sync
+  if (localNotes.length !== dbNotes.length) {
+    return true;
+  }
+
+  // Check if any note content or metadata differs
+  for (const localNote of localNotes) {
+    const dbNote = dbNotes.find(n => n.id === localNote.id);
+    
+    if (!dbNote) {
+      // Note exists in localStorage but not in DB
+      return true;
+    }
+    
+    // Compare content and metadata
+    if (
+      localNote.title !== dbNote.title ||
+      localNote.content !== dbNote.content ||
+      localNote.updatedAt !== dbNote.updatedAt
+    ) {
+      return true;
+    }
+  }
+
+  // Check if any DB note is missing from localStorage
+  for (const dbNote of dbNotes) {
+    const localNote = localNotes.find(n => n.id === dbNote.id);
+    if (!localNote) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+// Debug function to test localStorage functionality
+export const debugNotesStorage = () => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    const notes = getNotes();
+    
+    const hasChanges = hasUnsavedChanges();
+    
+    return {
+      notesCount: notes.length,
+      hasChanges
+    };
+  } catch (error) {
+    console.error('Debug: Error testing storage:', error);
+    return { error: error instanceof Error ? error.message : 'Unknown error' };
   }
 };
