@@ -29,6 +29,8 @@ interface PopupState {
   height: number;
   isMinimized: boolean;
   sidebarCollapsed: boolean;
+  scrollX: number;
+  scrollY: number;
 }
 
 const getDefaultSize = () => {
@@ -63,20 +65,28 @@ export default function NotesPopup({ isOpen, onClose }: NotesPopupProps) {
         ...defaultSize,
         isMinimized: false,
         sidebarCollapsed: false,
+        scrollX: 0,
+        scrollY: 0,
       };
     }
 
     const saved = localStorage.getItem('blog-ai-notes-popup-state');
     if (saved) {
       try {
-        return { ...JSON.parse(saved), isMinimized: false };
+        const parsed = JSON.parse(saved);
+        return { 
+          ...parsed, 
+          isMinimized: false,
+          scrollX: parsed.scrollX || 0,
+          scrollY: parsed.scrollY || 0,
+        };
       } catch {
         const defaultSize = getDefaultSize();
-        return { ...defaultSize, isMinimized: false, sidebarCollapsed: false };
+        return { ...defaultSize, isMinimized: false, sidebarCollapsed: false, scrollX: 0, scrollY: 0 };
       }
     }
     const defaultSize = getDefaultSize();
-    return { ...defaultSize, isMinimized: false, sidebarCollapsed: false };
+    return { ...defaultSize, isMinimized: false, sidebarCollapsed: false, scrollX: 0, scrollY: 0 };
   });
   const [hasUnsavedChangesState, setHasUnsavedChangesState] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
@@ -86,6 +96,17 @@ export default function NotesPopup({ isOpen, onClose }: NotesPopupProps) {
   const [syncStatus, setSyncStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [needsSync, setNeedsSync] = useState(false);
   const rndRef = useRef<Rnd>(null);
+
+  // Capture scroll position when popup is opened
+  useEffect(() => {
+    if (isOpen && typeof window !== 'undefined') {
+      setPopupState(prev => ({
+        ...prev,
+        scrollX: window.scrollX,
+        scrollY: window.scrollY,
+      }));
+    }
+  }, [isOpen]);
 
   // Load notes on mount using hybrid approach
   useEffect(() => {
@@ -153,6 +174,8 @@ export default function NotesPopup({ isOpen, onClose }: NotesPopupProps) {
         width: popupState.width,
         height: popupState.height,
         sidebarCollapsed: popupState.sidebarCollapsed,
+        scrollX: popupState.scrollX,
+        scrollY: popupState.scrollY,
       }));
     }
   }, [popupState]);
@@ -336,7 +359,7 @@ export default function NotesPopup({ isOpen, onClose }: NotesPopupProps) {
     <Rnd
       ref={rndRef}
       size={{ width: popupState.width, height: popupState.isMinimized ? 60 : popupState.height }}
-      position={{ x: popupState.x, y: popupState.y }}
+      position={{ x: popupState.scrollX + popupState.x, y: popupState.scrollY + popupState.y }}
       minWidth={MIN_SIZE.width}
       minHeight={popupState.isMinimized ? 60 : MIN_SIZE.height}
       maxWidth={typeof window !== 'undefined' ? window.innerWidth - 20 : 800}
@@ -344,7 +367,7 @@ export default function NotesPopup({ isOpen, onClose }: NotesPopupProps) {
       enableResizing={{
         top: false,
         right: false,
-        bottom: true,
+        bottom: false,
         left: false,
         topRight: false,
         bottomRight: true,
@@ -356,8 +379,8 @@ export default function NotesPopup({ isOpen, onClose }: NotesPopupProps) {
         if (typeof window === 'undefined') return;
         const maxX = Math.max(0, window.innerWidth - popupState.width);
         const maxY = Math.max(0, window.innerHeight - popupState.height);
-        const constrainedX = Math.max(0, Math.min(d.x, maxX));
-        const constrainedY = Math.max(0, Math.min(d.y, maxY));
+        const constrainedX = Math.max(0, Math.min(d.x - popupState.scrollX, maxX));
+        const constrainedY = Math.max(0, Math.min(d.y - popupState.scrollY, maxY));
         
         setPopupState(prev => ({ ...prev, x: constrainedX, y: constrainedY }));
       }}
@@ -366,8 +389,8 @@ export default function NotesPopup({ isOpen, onClose }: NotesPopupProps) {
         if (typeof window === 'undefined') return;
         const maxX = Math.max(0, window.innerWidth - popupState.width);
         const maxY = Math.max(0, window.innerHeight - popupState.height);
-        const constrainedX = Math.max(0, Math.min(d.x, maxX));
-        const constrainedY = Math.max(0, Math.min(d.y, maxY));
+        const constrainedX = Math.max(0, Math.min(d.x - popupState.scrollX, maxX));
+        const constrainedY = Math.max(0, Math.min(d.y - popupState.scrollY, maxY));
         
         setPopupState(prev => ({ ...prev, x: constrainedX, y: constrainedY }));
       }}
@@ -378,8 +401,8 @@ export default function NotesPopup({ isOpen, onClose }: NotesPopupProps) {
         const newHeight = parseInt(ref.style.height);
         const maxX = Math.max(0, window.innerWidth - newWidth);
         const maxY = Math.max(0, window.innerHeight - newHeight);
-        const constrainedX = Math.max(0, Math.min(position.x, maxX));
-        const constrainedY = Math.max(0, Math.min(position.y, maxY));
+        const constrainedX = Math.max(0, Math.min(position.x - popupState.scrollX, maxX));
+        const constrainedY = Math.max(0, Math.min(position.y - popupState.scrollY, maxY));
         
         setPopupState(prev => ({
           ...prev,
@@ -396,8 +419,8 @@ export default function NotesPopup({ isOpen, onClose }: NotesPopupProps) {
         const newHeight = parseInt(ref.style.height);
         const maxX = Math.max(0, window.innerWidth - newWidth);
         const maxY = Math.max(0, window.innerHeight - newHeight);
-        const constrainedX = Math.max(0, Math.min(position.x, maxX));
-        const constrainedY = Math.max(0, Math.min(position.y, maxY));
+        const constrainedX = Math.max(0, Math.min(position.x - popupState.scrollX, maxX));
+        const constrainedY = Math.max(0, Math.min(position.y - popupState.scrollY, maxY));
         
         setPopupState(prev => ({
           ...prev,
