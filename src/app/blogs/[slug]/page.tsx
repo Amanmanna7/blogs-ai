@@ -7,6 +7,7 @@ import Link from 'next/link';
 import ScrollToTop from '@/components/ScrollToTop';
 import AIChat from '@/components/AIChat';
 import QuizButton from '@/components/QuizButton';
+import NotesManager from '@/components/NotesManager';
 
 interface Category {
   id: string;
@@ -579,6 +580,9 @@ export default function BlogPage() {
           </div>
         </div>
       </main>
+      
+      {/* Notes Manager */}
+      <NotesManager />
     </div>
   );
 }
