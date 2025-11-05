@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import CourseHeader from '@/components/CourseHeader';
 import ChapterTopicAccordion from '@/components/ChapterTopicAccordion';
 import ScrollToTop from '@/components/ScrollToTop';
+import { useActivePlan } from '@/hooks/useActivePlan';
 
 interface Course {
   id: string;
@@ -71,7 +72,9 @@ interface ApiResponse {
 
 export default function CourseDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const courseId = params.id as string;
+  const { hasActivePlan } = useActivePlan();
   
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
@@ -100,6 +103,10 @@ export default function CourseDetailPage() {
       fetchCourse();
     }
   }, [courseId]);
+
+  const handleUpgradeClick = () => {
+    router.push('/profile?tab=subscription');
+  };
 
   if (loading) {
     return (
@@ -154,7 +161,7 @@ export default function CourseDetailPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Course Header */}
         <div className="mb-12">
-          <CourseHeader course={course} readingTimeInCourse={course.readingTimeInCourse} />
+          <CourseHeader course={course} readingTimeInCourse={course.readingTimeInCourse} chapterTopic={course.chapterTopics && course.chapterTopics.length > 0 ? course.chapterTopics[0] : undefined} />
         </div>
 
 
@@ -218,17 +225,20 @@ export default function CourseDetailPage() {
           <h3 className="mb-4 text-2xl font-bold text-gray-800">
             Ready to Start Learning?
           </h3>
-          <p className="mb-6 text-gray-600">
+          <p className="text-gray-600">
             Access all course content for free with premium AI support
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="cursor-pointer rounded-lg bg-white px-8 py-3 text-lg font-semibold text-blue-600 transition-all duration-300 hover:bg-blue-50 hover:shadow-lg">
-              Start Learning Free
-            </button>
-            <button className="cursor-pointer rounded-lg bg-gradient-to-r from-yellow-400 to-orange-500 px-8 py-3 text-lg font-semibold text-white transition-all duration-300 hover:from-yellow-500 hover:to-orange-600 hover:shadow-lg">
-              Upgrade to AI Premium
-            </button>
-          </div>
+          {!hasActivePlan && (
+            <div className="flex mt-4 flex-col sm:flex-row gap-4 justify-center">
+              <button 
+                onClick={handleUpgradeClick}
+                className="cursor-pointer rounded-lg bg-gradient-to-r from-yellow-400 to-orange-500 px-8 py-3 text-lg font-semibold text-white transition-all duration-300 hover:from-yellow-500 hover:to-orange-600 hover:shadow-lg"
+              >
+                Upgrade to AI Premium
+              </button>
+            </div>
+          )}
+          
         </div>
       </div>
 

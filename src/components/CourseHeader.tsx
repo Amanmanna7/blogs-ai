@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useActivePlan } from '@/hooks/useActivePlan';
 
 interface CourseHeaderProps {
   course: {
@@ -19,6 +21,19 @@ interface CourseHeaderProps {
       totalBlogs: number;
       progressPercentage: number;
     };
+  };
+  chapterTopic?: {
+    id: string;
+    name: string;
+    description: string;
+    displayNumber: number;
+    blogs: {
+      id: string;
+      title: string;
+      slug: string;
+      publishedAt: string | null;
+      sequence: number;
+    }[];
   };
   readingTimeInCourse?: number;
 }
@@ -77,20 +92,33 @@ const subjectTypeLabels = {
   OTHER: 'Other'
 };
 
-export default function CourseHeader({ course, readingTimeInCourse }: CourseHeaderProps) {
+export default function CourseHeader({ course, readingTimeInCourse, chapterTopic }: CourseHeaderProps) {
+  const router = useRouter();
+  const { hasActivePlan } = useActivePlan();
+
   // Get the first blog from the first chapter
   const getFirstBlogSlug = () => {
-    if (course.chapterTopics && course.chapterTopics.length > 0) {
-      const firstChapter = course.chapterTopics[0];
-      if (firstChapter.blogs && firstChapter.blogs.length > 0) {
-        return firstChapter.blogs[0].slug;
-      }
+    if (chapterTopic && chapterTopic.blogs && chapterTopic.blogs.length > 0) {
+      return chapterTopic.blogs[0].slug;
+    }
+    return null;
+  };
+
+  const getFirstChapterId = () => {
+    if (chapterTopic && chapterTopic.id) {
+      return chapterTopic.id;
     }
     return null;
   };
 
   const firstBlogSlug = getFirstBlogSlug();
+  const firstChapterId = getFirstChapterId();
+
   const gradients = subjectTypeGradients[course.subjectType];
+
+  const handleUpgradeClick = () => {
+    router.push('/profile?tab=subscription');
+  };
 
   return (
     <div className="relative overflow-hidden rounded-2xl shadow-2xl border border-gray-200">
@@ -211,7 +239,7 @@ export default function CourseHeader({ course, readingTimeInCourse }: CourseHead
         <div className="mt-8 flex flex-col sm:flex-row gap-4">
           {firstBlogSlug ? (
             <Link
-              href={`/blogs/${firstBlogSlug}`}
+              href={`/blogs/${firstBlogSlug}?chapter=${firstChapterId}`}
               className="cursor-pointer flex items-center justify-center space-x-2 rounded-lg bg-white px-6 py-3 text-blue-600 font-semibold transition-all duration-200 hover:bg-blue-50 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -228,15 +256,20 @@ export default function CourseHeader({ course, readingTimeInCourse }: CourseHead
             </button>
           )}
           
-          <button className="cursor-pointer relative overflow-hidden flex items-center justify-center space-x-2 rounded-lg bg-gradient-to-r from-yellow-400 to-orange-500 px-6 py-3 text-white font-semibold transition-all duration-500 hover:from-yellow-300 hover:to-orange-400 hover:scale-105 hover:shadow-xl hover:shadow-yellow-500/20 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 group">
-            {/* Premium shimmer effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out"></div>
-            
-            <svg className="h-5 w-5 relative z-10 group-hover:animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-            </svg>
-            <span className="relative z-10 group-hover:font-bold">Upgrade to AI Premium</span>
-          </button>
+          {!hasActivePlan && (
+            <button 
+              onClick={handleUpgradeClick}
+              className="cursor-pointer relative overflow-hidden flex items-center justify-center space-x-2 rounded-lg bg-gradient-to-r from-yellow-400 to-orange-500 px-6 py-3 text-white font-semibold transition-all duration-500 hover:from-yellow-300 hover:to-orange-400 hover:scale-105 hover:shadow-xl hover:shadow-yellow-500/20 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 group"
+            >
+              {/* Premium shimmer effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out"></div>
+              
+              <svg className="h-5 w-5 relative z-10 group-hover:animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              <span className="relative z-10 group-hover:font-bold">Upgrade to AI Premium</span>
+            </button>
+          )}
         </div>
 
         {/* Features */}

@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import CourseCard from '@/components/CourseCard';
 import ScrollToTop from '@/components/ScrollToTop';
+import { useActivePlan } from '@/hooks/useActivePlan';
 
 interface Course {
   id: string;
@@ -26,6 +28,8 @@ interface ApiResponse {
 }
 
 export default function CoursesPage() {
+  const router = useRouter();
+  const { hasActivePlan, loading: planLoading } = useActivePlan();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -104,6 +108,10 @@ export default function CoursesPage() {
   };
 
   const { inProgress, notStarted, completed } = categorizeCourses();
+
+  const handleUpgradeClick = () => {
+    router.push('/profile?tab=subscription');
+  };
 
   if (loading) {
     return (
@@ -379,9 +387,14 @@ export default function CoursesPage() {
               <button className="cursor-pointer rounded-lg bg-white px-8 py-3 text-lg font-semibold text-blue-600 transition-all duration-300 hover:bg-blue-50 hover:shadow-lg">
                 Start Learning Free
               </button>
-              <button className="cursor-pointer rounded-lg bg-gradient-to-r from-yellow-400 to-orange-500 px-8 py-3 text-lg font-semibold text-white transition-all duration-300 hover:from-yellow-500 hover:to-orange-600 hover:shadow-lg">
-                Upgrade to AI Premium
-              </button>
+              {!hasActivePlan && (
+                <button 
+                  onClick={handleUpgradeClick}
+                  className="cursor-pointer rounded-lg bg-gradient-to-r from-yellow-400 to-orange-500 px-8 py-3 text-lg font-semibold text-white transition-all duration-300 hover:from-yellow-500 hover:to-orange-600 hover:shadow-lg"
+                >
+                  Upgrade to AI Premium
+                </button>
+              )}
             </div>
             <div className="mt-6 flex flex-wrap justify-center gap-6 text-sm text-blue-200">
               <div className="flex items-center space-x-2">
