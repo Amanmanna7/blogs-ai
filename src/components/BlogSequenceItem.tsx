@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import SearchableSelect from './SearchableSelect';
 
 interface BlogContent {
   id: string;
@@ -81,7 +82,7 @@ export default function BlogSequenceItem({
   };
 
   const handleContentChange = (blogContentId: string) => {
-    onUpdate(sequence.id, { blogContentId, type: 'content' });
+    onUpdate(sequence.id, { blogContentId: blogContentId || undefined, type: 'content' });
   };
 
   const handleMediaChange = (blogMediaId: string) => {
@@ -138,19 +139,17 @@ export default function BlogSequenceItem({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Select Content
           </label>
-          <select
+          <SearchableSelect
+            options={blogContents.map((content) => ({
+              value: content.id,
+              label: content.name
+            }))}
             value={sequence.blogContentId || ''}
-            onChange={(e) => handleContentChange(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            onChange={handleContentChange}
+            placeholder="Choose content..."
             disabled={disabled}
-          >
-            <option value="">Choose content...</option>
-            {blogContents.map((content) => (
-              <option key={content.id} value={content.id}>
-                {content.name}
-              </option>
-            ))}
-          </select>
+            className="w-full"
+          />
           {sequence.blogContentId && (
             <div className="mt-2 p-2 bg-gray-50 rounded text-sm text-gray-600">
               {blogContents.find(c => c.id === sequence.blogContentId)?.name}

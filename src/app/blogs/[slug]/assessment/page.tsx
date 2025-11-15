@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { QuestionType } from '@prisma/client';
+import ScrollToTop from '@/components/ScrollToTop';
 
 interface Question {
   id: string;
@@ -182,6 +183,7 @@ export default function AssessmentPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <ScrollToTop />
       {/* Mobile Responsive Header */}
       <div className="bg-white/80 backdrop-blur-sm shadow-lg border-b border-gray-200/50 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">

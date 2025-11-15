@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { use } from 'react';
 import { Course, Blog } from '@prisma/client';
 import { Plus, X, GripVertical, Eye, EyeOff, ChevronDown, ChevronRight } from 'lucide-react';
+import SearchableSelect from './SearchableSelect';
 import { useEditor, EditorContent, useEditorState } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { TextStyle } from '@tiptap/extension-text-style';
@@ -641,6 +642,10 @@ export default function ChapterTopicForm({
           if (selectedBlog) {
             updatedSeq.blog = selectedBlog;
           }
+        } else if (updates.blogId === undefined || updates.blogId === '') {
+          // Clear blog selection
+          updatedSeq.blogId = '';
+          updatedSeq.blog = {} as Blog;
         }
         
         return updatedSeq;
@@ -895,23 +900,17 @@ export default function ChapterTopicForm({
                         </button>
                       </div>
 
-                      <select
-                        value={sequence.blogId}
-                        onChange={(e) => updateBlogSequence(sequence.id, { blogId: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      <SearchableSelect
+                        options={blogs.map((blog) => ({
+                          value: blog.id,
+                          label: `${blog.title} [${blog.status}]`
+                        }))}
+                        value={sequence.blogId || ''}
+                        onChange={(blogId) => updateBlogSequence(sequence.id, { blogId: blogId || undefined })}
+                        placeholder={blogs.length === 0 ? "No blogs available" : "Select a blog"}
                         disabled={isSubmitting}
-                      >
-                        <option value="">Select a blog</option>
-                        {blogs.length === 0 ? (
-                          <option value="" disabled>No blogs available</option>
-                        ) : (
-                          blogs.map((blog) => (
-                            <option key={blog.id} value={blog.id}>
-                              {blog.title} [{blog.status}]
-                            </option>
-                          ))
-                        )}
-                      </select>
+                        className="w-full"
+                      />
 
                       {sequence.blog && sequence.blog.title && (
                         <div className="mt-2 p-2 bg-white rounded border">
