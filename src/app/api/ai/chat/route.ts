@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { getMessageLimit, getMessageLimitFromUserPlan, getLimitStartDate, FeatureSlug } from '@/types/messaging-limits';
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPEN_AI_KEY,
 });
 
 export async function POST(request: NextRequest) {
