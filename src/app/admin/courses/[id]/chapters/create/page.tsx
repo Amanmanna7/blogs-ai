@@ -4,9 +4,9 @@ import { use } from 'react';
 import ChapterTopicForm from '@/components/ChapterTopicForm';
 
 interface CreateChapterPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function CreateChapterPage({ params }: CreateChapterPageProps) {

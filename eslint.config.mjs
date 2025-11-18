@@ -21,5 +21,6 @@ const eslintConfig = [
     ],
   },
 ];
+console.log("i am still watching");
 
 export default eslintConfig;

@@ -4,11 +4,12 @@ import { prisma } from '@/lib/prisma';
 // GET /api/plans/[id] - Get a specific plan with features
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const plan = await prisma.plan.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         features: {
           orderBy: {
@@ -38,9 +39,10 @@ export async function GET(
 // PUT /api/plans/[id] - Update a plan
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { name, description, price_per_month, status, features } = await request.json();
 
     if (!name || !name.trim()) {
@@ -73,7 +75,7 @@ export async function PUT(
 
     // Check if plan exists
     const existingPlan = await prisma.plan.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
 
     if (!existingPlan) {
@@ -87,7 +89,7 @@ export async function PUT(
     const duplicatePlan = await prisma.plan.findFirst({
       where: { 
         name: name.trim(),
-        id: { not: params.id }
+        id: { not: id }
       }
     });
 
@@ -100,7 +102,7 @@ export async function PUT(
 
     // Update plan and handle features
     const plan = await prisma.plan.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name: name.trim(),
         description: description.trim(),
@@ -134,12 +136,13 @@ export async function PUT(
 // DELETE /api/plans/[id] - Delete a plan
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     // Check if plan exists
     const existingPlan = await prisma.plan.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         userPlans: true
       }
@@ -162,7 +165,7 @@ export async function DELETE(
 
     // Delete the plan (features will be deleted due to cascade)
     await prisma.plan.delete({
-      where: { id: params.id }
+      where: { id }
     });
 
     return NextResponse.json({ message: 'Plan deleted successfully' });

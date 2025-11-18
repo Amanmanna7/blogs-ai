@@ -26,10 +26,10 @@ interface ChapterTopic {
 }
 
 interface ChapterDetailPageProps {
-  params: {
+  params: Promise<{
     id: string;
     chapterId: string;
-  };
+  }>;
 }
 
 export default function ChapterDetailPage({ params }: ChapterDetailPageProps) {

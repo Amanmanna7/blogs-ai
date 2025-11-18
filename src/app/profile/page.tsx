@@ -1,14 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
 import PersonalDetails from '@/components/profile/PersonalDetails';
 import ProgressReports from '@/components/profile/ProgressReports';
 import SubscriptionPlans from '@/components/profile/SubscriptionPlans';
 
-export default function ProfilePage() {
+function ProfileContent() {
   const { isSignedIn, isLoaded, user } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -156,5 +155,17 @@ export default function ProfilePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    }>
+      <ProfileContent />
+    </Suspense>
   );
 }

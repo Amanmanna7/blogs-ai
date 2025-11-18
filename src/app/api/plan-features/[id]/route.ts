@@ -4,11 +4,12 @@ import { prisma } from '@/lib/prisma';
 // GET /api/plan-features/[id] - Get a specific plan feature
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const planFeature = await prisma.planFeature.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         plan: {
           select: {
@@ -39,9 +40,10 @@ export async function GET(
 // PUT /api/plan-features/[id] - Update a plan feature
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { feature, description, featureSlug, status } = await request.json();
 
     if (!feature || !feature.trim()) {
@@ -67,7 +69,7 @@ export async function PUT(
 
     // Check if plan feature exists
     const existingFeature = await prisma.planFeature.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
 
     if (!existingFeature) {
@@ -82,7 +84,7 @@ export async function PUT(
       where: { 
         planId: existingFeature.planId,
         featureSlug: featureSlug.trim(),
-        id: { not: params.id }
+        id: { not: id }
       }
     });
 
@@ -94,7 +96,7 @@ export async function PUT(
     }
 
     const planFeature = await prisma.planFeature.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         feature: feature.trim(),
         description: description.trim(),
@@ -124,12 +126,13 @@ export async function PUT(
 // DELETE /api/plan-features/[id] - Delete a plan feature
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     // Check if plan feature exists
     const existingFeature = await prisma.planFeature.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
 
     if (!existingFeature) {
@@ -141,7 +144,7 @@ export async function DELETE(
 
     // Delete the plan feature
     await prisma.planFeature.delete({
-      where: { id: params.id }
+      where: { id }
     });
 
     return NextResponse.json({ message: 'Plan feature deleted successfully' });

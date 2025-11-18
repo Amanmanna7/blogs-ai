@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import BlogPreview from '@/components/BlogPreview';
 import Link from 'next/link';
@@ -58,7 +58,7 @@ interface Blog {
   sequences: BlogSequence[];
 }
 
-export default function BlogPage() {
+function BlogContent() {
   const params = useParams();
   const slug = params.slug as string;
   const searchParams = useSearchParams();
@@ -584,5 +584,17 @@ export default function BlogPage() {
       {/* Notes Manager */}
       <NotesManager />
     </div>
+  );
+}
+
+export default function BlogPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    }>
+      <BlogContent />
+    </Suspense>
   );
 }

@@ -2,8 +2,9 @@
 
 import { SignUp } from '@clerk/nextjs';
 import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function SignUpPage() {
+function SignUpContent() {
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get('redirect') || '/courses';
 
@@ -39,5 +40,17 @@ export default function SignUpPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    }>
+      <SignUpContent />
+    </Suspense>
   );
 }

@@ -6,7 +6,7 @@ import { hasPermission } from '@/lib/rbac';
 // PUT /api/users/[id]/role - Update user role (admin only)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -14,7 +14,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const { role } = await request.json();
 
     if (!role || !['USER', 'AUTHOR', 'EDITOR', 'MODERATOR', 'ADMIN'].includes(role)) {

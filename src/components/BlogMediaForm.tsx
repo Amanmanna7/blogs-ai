@@ -26,7 +26,7 @@ const mediaTypeLabels = {
 };
 
 // File type restrictions for each media type
-const mediaTypeFileTypes = {
+const mediaTypeFileTypes: Record<MediaType, { accept: string; types: string[]; description: string }> = {
   [MediaType.IMAGE]: {
     accept: 'image/*',
     types: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'],
@@ -54,8 +54,15 @@ const mediaTypeFileTypes = {
   }
 };
 
+interface FormData {
+  name: string;
+  slug: string;
+  description: string;
+  mediaType: MediaType;
+}
+
 export default function BlogMediaForm({ onSuccess, onCancel }: BlogMediaFormProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     slug: '',
     description: '',

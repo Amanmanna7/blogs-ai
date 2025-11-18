@@ -6,7 +6,7 @@ import { deleteFile as deleteFileGCP } from '@/lib/gcp-storage';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser();
@@ -15,8 +15,9 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const blogMedia = await prisma.blogMedia.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!blogMedia) {
@@ -35,7 +36,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser();
@@ -44,12 +45,13 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const body = await request.json();
     const { name, description, mediaType } = body;
 
     // Generate new slug if name changed
     const existingMedia = await prisma.blogMedia.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingMedia) {
@@ -62,7 +64,7 @@ export async function PUT(
       .replace(/(^-|-$)/g, '');
 
     const blogMedia = await prisma.blogMedia.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name,
         slug,
@@ -84,7 +86,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser();
@@ -93,8 +95,9 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const blogMedia = await prisma.blogMedia.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!blogMedia) {
@@ -154,7 +157,7 @@ export async function DELETE(
 
     // Delete from database
     await prisma.blogMedia.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: 'Media deleted successfully' });

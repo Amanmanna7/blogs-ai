@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation';
 import ChapterTopicForm from '@/components/ChapterTopicForm';
 
 interface EditChapterPageProps {
-  params: {
+  params: Promise<{
     id: string;
     chapterId: string;
-  };
+  }>;
 }
 
 export default function EditChapterPage({ params }: EditChapterPageProps) {
