@@ -1,0 +1,3 @@
+{
+  "/api/assessments/generate-feedback/route": "app/api/assessments/generate-feedback/route.js"
+}

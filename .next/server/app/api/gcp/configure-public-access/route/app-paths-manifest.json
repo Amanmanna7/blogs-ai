@@ -1,0 +1,3 @@
+{
+  "/api/gcp/configure-public-access/route": "app/api/gcp/configure-public-access/route.js"
+}

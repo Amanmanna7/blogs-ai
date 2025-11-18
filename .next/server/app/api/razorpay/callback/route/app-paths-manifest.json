@@ -1,0 +1,3 @@
+{
+  "/api/razorpay/callback/route": "app/api/razorpay/callback/route.js"
+}

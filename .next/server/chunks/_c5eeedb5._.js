@@ -1,0 +1,3 @@
+module.exports=[69449,e=>{"use strict";async function s(){try{console.log("🚀 Initializing BullMQ queue system...");let{initializeQueueSystem:s}=await e.A(68372);await s(),console.log("✅ BullMQ queue system initialized successfully")}catch(e){console.error("❌ Failed to initialize BullMQ queue system:",e)}}e.s(["register",()=>s])},68372,e=>{e.v(s=>Promise.all(["server/chunks/[root-of-the-server]__3140e4c9._.js","server/chunks/[root-of-the-server]__82bace43._.js","server/chunks/_485596b1._.js","server/chunks/_38d5a93d._.js"].map(s=>e.l(s))).then(()=>s(2662)))}];
+
+//# sourceMappingURL=_c5eeedb5._.js.map

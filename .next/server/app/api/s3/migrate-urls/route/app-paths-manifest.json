@@ -1,0 +1,3 @@
+{
+  "/api/s3/migrate-urls/route": "app/api/s3/migrate-urls/route.js"
+}

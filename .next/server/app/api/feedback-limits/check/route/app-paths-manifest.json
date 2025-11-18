@@ -1,0 +1,3 @@
+{
+  "/api/feedback-limits/check/route": "app/api/feedback-limits/check/route.js"
+}

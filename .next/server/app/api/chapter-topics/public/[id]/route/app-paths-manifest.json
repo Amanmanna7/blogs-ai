@@ -1,0 +1,3 @@
+{
+  "/api/chapter-topics/public/[id]/route": "app/api/chapter-topics/public/[id]/route.js"
+}

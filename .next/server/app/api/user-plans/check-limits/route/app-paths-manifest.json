@@ -1,0 +1,3 @@
+{
+  "/api/user-plans/check-limits/route": "app/api/user-plans/check-limits/route.js"
+}
