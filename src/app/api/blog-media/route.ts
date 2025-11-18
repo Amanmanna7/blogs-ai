@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { uploadFile } from '@/lib/gcp-storage';
+import { uploadFile } from '@/lib/s3-storage';
 import { MediaType } from '@prisma/client';
 
 export async function POST(request: NextRequest) {
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Upload to Google Cloud Storage
+    // Upload to AWS S3
     const uploadResult = await uploadFile(
       buffer,
       file.name,

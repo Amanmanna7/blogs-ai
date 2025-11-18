@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { deleteFile } from '@/lib/gcp-storage';
+import { deleteFile } from '@/lib/s3-storage';
+import { deleteFile as deleteFileGCP } from '@/lib/gcp-storage';
 
 export async function GET(
   request: NextRequest,
@@ -100,17 +101,55 @@ export async function DELETE(
       return NextResponse.json({ error: 'Media not found' }, { status: 404 });
     }
 
-    // Extract filename from URL for deletion from GCS
-    const urlParts = blogMedia.mediaUrl.split('/');
-    const fileName = urlParts[urlParts.length - 1];
-    const fullPath = `blog-media/${fileName}`;
-
-    // Delete from Google Cloud Storage
-    try {
-      await deleteFile(fullPath);
-    } catch (error) {
-      console.error('Error deleting file from GCS:', error);
-      // Continue with database deletion even if GCS deletion fails
+    // Extract file path from URL - handle both GCP and S3/CloudFront URLs
+    const url = blogMedia.mediaUrl;
+    let filePath: string;
+    
+    // Check if it's a GCP URL (storage.googleapis.com)
+    if (url.includes('storage.googleapis.com')) {
+      // GCP URL format: https://storage.googleapis.com/{bucket}/{path}
+      const urlParts = url.split('storage.googleapis.com/');
+      if (urlParts.length > 1) {
+        // Remove bucket name (first part) and get the rest as path
+        const parts = urlParts[1].split('/');
+        filePath = parts.slice(1).join('/');
+      } else {
+        // Fallback: extract from end of URL
+        const parts = url.split('/');
+        const blogMediaIndex = parts.indexOf('blog-media');
+        filePath = blogMediaIndex >= 0 ? parts.slice(blogMediaIndex).join('/') : parts[parts.length - 1];
+      }
+      
+      // Delete from Google Cloud Storage (for backward compatibility)
+      try {
+        await deleteFileGCP(filePath);
+      } catch (error) {
+        console.error('Error deleting file from GCS:', error);
+        // Continue with database deletion even if GCS deletion fails
+      }
+    } else {
+      // S3 or CloudFront URL
+      // S3 format: https://{bucket}.s3.{region}.amazonaws.com/{path}
+      // CloudFront format: https://{cloudfront-domain}/{path}
+      
+      // Extract path after domain
+      const urlMatch = url.match(/https?:\/\/[^\/]+\/(.+)$/);
+      if (urlMatch && urlMatch[1]) {
+        filePath = urlMatch[1];
+      } else {
+        // Fallback: try to find blog-media in path
+        const parts = url.split('/');
+        const blogMediaIndex = parts.indexOf('blog-media');
+        filePath = blogMediaIndex >= 0 ? parts.slice(blogMediaIndex).join('/') : parts[parts.length - 1];
+      }
+      
+      // Delete from AWS S3
+      try {
+        await deleteFile(filePath);
+      } catch (error) {
+        console.error('Error deleting file from S3:', error);
+        // Continue with database deletion even if S3 deletion fails
+      }
     }
 
     // Delete from database

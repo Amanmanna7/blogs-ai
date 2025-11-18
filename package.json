@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.932.0",
     "@clerk/nextjs": "^6.32.2",
     "@google-cloud/storage": "^7.17.1",
     "@hello-pangea/dnd": "^18.0.1",

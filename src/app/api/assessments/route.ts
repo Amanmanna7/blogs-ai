@@ -10,7 +10,7 @@ import {
 } from '@/types/quiz-limits';
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPEN_AI_KEY,
 });
 
 // GET user assessments
