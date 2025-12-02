@@ -1,9 +1,15 @@
 {
   "node": {
-    "7f32ef6cf2a829b5abdbbd5c9bf929f10c04f1d094": {
+    "7f540d53664713fde935cba94bf54648bf3cec5dfb": {
       "workers": {
         "app/_not-found/page": {
           "moduleId": "38487",
+          "async": false,
+          "exportedName": "detectKeylessEnvDriftAction",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/app-router/keyless-actions.js"
+        },
+        "app/about/page": {
+          "moduleId": "96319",
           "async": false,
           "exportedName": "detectKeylessEnvDriftAction",
           "filename": "node_modules/@clerk/nextjs/dist/esm/app-router/keyless-actions.js"
@@ -245,6 +251,7 @@
       },
       "layer": {
         "app/_not-found/page": "rsc",
+        "app/about/page": "rsc",
         "app/admin/analytics/page": "rsc",
         "app/admin/blog-contents/[id]/edit/page": "rsc",
         "app/admin/blog-contents/[id]/page": "rsc",
@@ -288,10 +295,16 @@
       "filename": "node_modules/@clerk/nextjs/dist/esm/app-router/keyless-actions.js",
       "exportedName": "detectKeylessEnvDriftAction"
     },
-    "7f62349c2cd818f53a57307f9ec71b78c125e7201b": {
+    "7f454d6cbb0a3a8607960df27ac61d0e4a13b78459": {
       "workers": {
         "app/_not-found/page": {
           "moduleId": "38487",
+          "async": false,
+          "exportedName": "invalidateCacheAction",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/app-router/server-actions.js"
+        },
+        "app/about/page": {
+          "moduleId": "96319",
           "async": false,
           "exportedName": "invalidateCacheAction",
           "filename": "node_modules/@clerk/nextjs/dist/esm/app-router/server-actions.js"
@@ -533,6 +546,7 @@
       },
       "layer": {
         "app/_not-found/page": "action-browser",
+        "app/about/page": "action-browser",
         "app/admin/analytics/page": "action-browser",
         "app/admin/blog-contents/[id]/edit/page": "action-browser",
         "app/admin/blog-contents/[id]/page": "action-browser",
@@ -576,10 +590,16 @@
       "filename": "node_modules/@clerk/nextjs/dist/esm/app-router/server-actions.js",
       "exportedName": "invalidateCacheAction"
     },
-    "7fb52ab4b31ebcf8ff4b8c0b00cb3b23f05109d8b4": {
+    "7fcdff79903b2bc21708a2463711dca32512aed72d": {
       "workers": {
         "app/_not-found/page": {
           "moduleId": "38487",
+          "async": false,
+          "exportedName": "createOrReadKeylessAction",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/app-router/keyless-actions.js"
+        },
+        "app/about/page": {
+          "moduleId": "96319",
           "async": false,
           "exportedName": "createOrReadKeylessAction",
           "filename": "node_modules/@clerk/nextjs/dist/esm/app-router/keyless-actions.js"
@@ -821,6 +841,7 @@
       },
       "layer": {
         "app/_not-found/page": "rsc",
+        "app/about/page": "rsc",
         "app/admin/analytics/page": "rsc",
         "app/admin/blog-contents/[id]/edit/page": "rsc",
         "app/admin/blog-contents/[id]/page": "rsc",
@@ -864,298 +885,16 @@
       "filename": "node_modules/@clerk/nextjs/dist/esm/app-router/keyless-actions.js",
       "exportedName": "createOrReadKeylessAction"
     },
-    "7f53497f2ddba39a42f5761535fd0fd46ef6668625": {
+    "7f3974fd5d9d5a03d9de5fa9d1367bc0e6ec49ed1f": {
       "workers": {
         "app/_not-found/page": {
           "moduleId": "38487",
           "async": false,
-          "exportedName": "collectKeylessMetadata",
+          "exportedName": "formatMetadataHeaders",
           "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
         },
-        "app/admin/analytics/page": {
-          "moduleId": "15107",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/blog-contents/[id]/edit/page": {
-          "moduleId": "86050",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/blog-contents/[id]/page": {
-          "moduleId": "3328",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/blog-contents/create/page": {
-          "moduleId": "44089",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/blog-contents/page": {
-          "moduleId": "71212",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/blogs/[id]/edit/page": {
-          "moduleId": "1469",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/blogs/[id]/page": {
-          "moduleId": "99788",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/blogs/create/page": {
-          "moduleId": "55407",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/blogs/page": {
-          "moduleId": "62568",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/categories/[id]/edit/page": {
-          "moduleId": "24827",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/categories/create/page": {
-          "moduleId": "41785",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/categories/page": {
-          "moduleId": "37540",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/chapter-topics/page": {
-          "moduleId": "84497",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/courses/[id]/chapters/[chapterId]/edit/page": {
-          "moduleId": "12410",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/courses/[id]/chapters/[chapterId]/page": {
-          "moduleId": "31981",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/courses/[id]/chapters/create/page": {
-          "moduleId": "25938",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/courses/[id]/edit/page": {
-          "moduleId": "37662",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/courses/[id]/page": {
-          "moduleId": "26440",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/courses/create/page": {
-          "moduleId": "78694",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/courses/page": {
-          "moduleId": "16210",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/media/page": {
-          "moduleId": "30626",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/page": {
-          "moduleId": "15702",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/plans/[id]/edit/page": {
-          "moduleId": "71849",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/plans/create/page": {
-          "moduleId": "12118",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/plans/page": {
-          "moduleId": "73274",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/admin/users/page": {
-          "moduleId": "81628",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/blogs/[slug]/assessment/page": {
-          "moduleId": "11781",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/blogs/[slug]/assessment/results/page": {
-          "moduleId": "80402",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/blogs/[slug]/page": {
-          "moduleId": "15663",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/blogs/page": {
-          "moduleId": "69968",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/courses/[id]/page": {
-          "moduleId": "62665",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/courses/page": {
-          "moduleId": "59993",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/page": {
-          "moduleId": "1470",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/profile/page": {
-          "moduleId": "47050",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/progress_and_reports/page": {
-          "moduleId": "49279",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/quiz/page": {
-          "moduleId": "41449",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/report/page": {
-          "moduleId": "54870",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/sign-in/[[...sign-in]]/page": {
-          "moduleId": "34164",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        },
-        "app/sign-up/[[...sign-up]]/page": {
-          "moduleId": "23196",
-          "async": false,
-          "exportedName": "collectKeylessMetadata",
-          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
-        }
-      },
-      "layer": {
-        "app/_not-found/page": "rsc",
-        "app/admin/analytics/page": "rsc",
-        "app/admin/blog-contents/[id]/edit/page": "rsc",
-        "app/admin/blog-contents/[id]/page": "rsc",
-        "app/admin/blog-contents/create/page": "rsc",
-        "app/admin/blog-contents/page": "rsc",
-        "app/admin/blogs/[id]/edit/page": "rsc",
-        "app/admin/blogs/[id]/page": "rsc",
-        "app/admin/blogs/create/page": "rsc",
-        "app/admin/blogs/page": "rsc",
-        "app/admin/categories/[id]/edit/page": "rsc",
-        "app/admin/categories/create/page": "rsc",
-        "app/admin/categories/page": "rsc",
-        "app/admin/chapter-topics/page": "rsc",
-        "app/admin/courses/[id]/chapters/[chapterId]/edit/page": "rsc",
-        "app/admin/courses/[id]/chapters/[chapterId]/page": "rsc",
-        "app/admin/courses/[id]/chapters/create/page": "rsc",
-        "app/admin/courses/[id]/edit/page": "rsc",
-        "app/admin/courses/[id]/page": "rsc",
-        "app/admin/courses/create/page": "rsc",
-        "app/admin/courses/page": "rsc",
-        "app/admin/media/page": "rsc",
-        "app/admin/page": "rsc",
-        "app/admin/plans/[id]/edit/page": "rsc",
-        "app/admin/plans/create/page": "rsc",
-        "app/admin/plans/page": "rsc",
-        "app/admin/users/page": "rsc",
-        "app/blogs/[slug]/assessment/page": "rsc",
-        "app/blogs/[slug]/assessment/results/page": "rsc",
-        "app/blogs/[slug]/page": "rsc",
-        "app/blogs/page": "rsc",
-        "app/courses/[id]/page": "rsc",
-        "app/courses/page": "rsc",
-        "app/page": "rsc",
-        "app/profile/page": "rsc",
-        "app/progress_and_reports/page": "rsc",
-        "app/quiz/page": "rsc",
-        "app/report/page": "rsc",
-        "app/sign-in/[[...sign-in]]/page": "rsc",
-        "app/sign-up/[[...sign-up]]/page": "rsc"
-      },
-      "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js",
-      "exportedName": "collectKeylessMetadata"
-    },
-    "7f8a94ed85da3fee013009f5114fac81fbf731bd3c": {
-      "workers": {
-        "app/_not-found/page": {
-          "moduleId": "38487",
+        "app/about/page": {
+          "moduleId": "96319",
           "async": false,
           "exportedName": "formatMetadataHeaders",
           "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
@@ -1397,6 +1136,7 @@
       },
       "layer": {
         "app/_not-found/page": "rsc",
+        "app/about/page": "rsc",
         "app/admin/analytics/page": "rsc",
         "app/admin/blog-contents/[id]/edit/page": "rsc",
         "app/admin/blog-contents/[id]/page": "rsc",
@@ -1440,10 +1180,311 @@
       "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js",
       "exportedName": "formatMetadataHeaders"
     },
-    "7f2e2db9a526e9bd58787d9f6a54f236f1ee47e773": {
+    "7ff65c184699084eb88ff7b4675e65236ba4c76bff": {
       "workers": {
         "app/_not-found/page": {
           "moduleId": "38487",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/about/page": {
+          "moduleId": "96319",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/analytics/page": {
+          "moduleId": "15107",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/blog-contents/[id]/edit/page": {
+          "moduleId": "86050",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/blog-contents/[id]/page": {
+          "moduleId": "3328",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/blog-contents/create/page": {
+          "moduleId": "44089",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/blog-contents/page": {
+          "moduleId": "71212",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/blogs/[id]/edit/page": {
+          "moduleId": "1469",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/blogs/[id]/page": {
+          "moduleId": "99788",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/blogs/create/page": {
+          "moduleId": "55407",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/blogs/page": {
+          "moduleId": "62568",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/categories/[id]/edit/page": {
+          "moduleId": "24827",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/categories/create/page": {
+          "moduleId": "41785",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/categories/page": {
+          "moduleId": "37540",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/chapter-topics/page": {
+          "moduleId": "84497",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/courses/[id]/chapters/[chapterId]/edit/page": {
+          "moduleId": "12410",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/courses/[id]/chapters/[chapterId]/page": {
+          "moduleId": "31981",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/courses/[id]/chapters/create/page": {
+          "moduleId": "25938",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/courses/[id]/edit/page": {
+          "moduleId": "37662",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/courses/[id]/page": {
+          "moduleId": "26440",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/courses/create/page": {
+          "moduleId": "78694",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/courses/page": {
+          "moduleId": "16210",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/media/page": {
+          "moduleId": "30626",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/page": {
+          "moduleId": "15702",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/plans/[id]/edit/page": {
+          "moduleId": "71849",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/plans/create/page": {
+          "moduleId": "12118",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/plans/page": {
+          "moduleId": "73274",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/admin/users/page": {
+          "moduleId": "81628",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/blogs/[slug]/assessment/page": {
+          "moduleId": "11781",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/blogs/[slug]/assessment/results/page": {
+          "moduleId": "80402",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/blogs/[slug]/page": {
+          "moduleId": "15663",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/blogs/page": {
+          "moduleId": "69968",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/courses/[id]/page": {
+          "moduleId": "62665",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/courses/page": {
+          "moduleId": "59993",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/page": {
+          "moduleId": "1470",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/profile/page": {
+          "moduleId": "47050",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/progress_and_reports/page": {
+          "moduleId": "49279",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/quiz/page": {
+          "moduleId": "41449",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/report/page": {
+          "moduleId": "54870",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/sign-in/[[...sign-in]]/page": {
+          "moduleId": "34164",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        },
+        "app/sign-up/[[...sign-up]]/page": {
+          "moduleId": "23196",
+          "async": false,
+          "exportedName": "collectKeylessMetadata",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js"
+        }
+      },
+      "layer": {
+        "app/_not-found/page": "rsc",
+        "app/about/page": "rsc",
+        "app/admin/analytics/page": "rsc",
+        "app/admin/blog-contents/[id]/edit/page": "rsc",
+        "app/admin/blog-contents/[id]/page": "rsc",
+        "app/admin/blog-contents/create/page": "rsc",
+        "app/admin/blog-contents/page": "rsc",
+        "app/admin/blogs/[id]/edit/page": "rsc",
+        "app/admin/blogs/[id]/page": "rsc",
+        "app/admin/blogs/create/page": "rsc",
+        "app/admin/blogs/page": "rsc",
+        "app/admin/categories/[id]/edit/page": "rsc",
+        "app/admin/categories/create/page": "rsc",
+        "app/admin/categories/page": "rsc",
+        "app/admin/chapter-topics/page": "rsc",
+        "app/admin/courses/[id]/chapters/[chapterId]/edit/page": "rsc",
+        "app/admin/courses/[id]/chapters/[chapterId]/page": "rsc",
+        "app/admin/courses/[id]/chapters/create/page": "rsc",
+        "app/admin/courses/[id]/edit/page": "rsc",
+        "app/admin/courses/[id]/page": "rsc",
+        "app/admin/courses/create/page": "rsc",
+        "app/admin/courses/page": "rsc",
+        "app/admin/media/page": "rsc",
+        "app/admin/page": "rsc",
+        "app/admin/plans/[id]/edit/page": "rsc",
+        "app/admin/plans/create/page": "rsc",
+        "app/admin/plans/page": "rsc",
+        "app/admin/users/page": "rsc",
+        "app/blogs/[slug]/assessment/page": "rsc",
+        "app/blogs/[slug]/assessment/results/page": "rsc",
+        "app/blogs/[slug]/page": "rsc",
+        "app/blogs/page": "rsc",
+        "app/courses/[id]/page": "rsc",
+        "app/courses/page": "rsc",
+        "app/page": "rsc",
+        "app/profile/page": "rsc",
+        "app/progress_and_reports/page": "rsc",
+        "app/quiz/page": "rsc",
+        "app/report/page": "rsc",
+        "app/sign-in/[[...sign-in]]/page": "rsc",
+        "app/sign-up/[[...sign-up]]/page": "rsc"
+      },
+      "filename": "node_modules/@clerk/nextjs/dist/esm/server/keyless-custom-headers.js",
+      "exportedName": "collectKeylessMetadata"
+    },
+    "7f904f58ef10bc010e429061d25b2c855c884039e3": {
+      "workers": {
+        "app/_not-found/page": {
+          "moduleId": "38487",
+          "async": false,
+          "exportedName": "syncKeylessConfigAction",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/app-router/keyless-actions.js"
+        },
+        "app/about/page": {
+          "moduleId": "96319",
           "async": false,
           "exportedName": "syncKeylessConfigAction",
           "filename": "node_modules/@clerk/nextjs/dist/esm/app-router/keyless-actions.js"
@@ -1685,6 +1726,7 @@
       },
       "layer": {
         "app/_not-found/page": "action-browser",
+        "app/about/page": "action-browser",
         "app/admin/analytics/page": "action-browser",
         "app/admin/blog-contents/[id]/edit/page": "action-browser",
         "app/admin/blog-contents/[id]/page": "action-browser",
@@ -1728,10 +1770,16 @@
       "filename": "node_modules/@clerk/nextjs/dist/esm/app-router/keyless-actions.js",
       "exportedName": "syncKeylessConfigAction"
     },
-    "7fb5f04788107cccafed17918a63e8edfd9a8c80f9": {
+    "7f963ba606a609d1dc3b5212e13123cc8f69ae0fd9": {
       "workers": {
         "app/_not-found/page": {
           "moduleId": "38487",
+          "async": false,
+          "exportedName": "deleteKeylessAction",
+          "filename": "node_modules/@clerk/nextjs/dist/esm/app-router/keyless-actions.js"
+        },
+        "app/about/page": {
+          "moduleId": "96319",
           "async": false,
           "exportedName": "deleteKeylessAction",
           "filename": "node_modules/@clerk/nextjs/dist/esm/app-router/keyless-actions.js"
@@ -1973,6 +2021,7 @@
       },
       "layer": {
         "app/_not-found/page": "action-browser",
+        "app/about/page": "action-browser",
         "app/admin/analytics/page": "action-browser",
         "app/admin/blog-contents/[id]/edit/page": "action-browser",
         "app/admin/blog-contents/[id]/page": "action-browser",
@@ -2018,5 +2067,5 @@
     }
   },
   "edge": {},
-  "encryptionKey": "os1Z+UMgTCRip3vc7UvYfE4lD5SXyCWEolWHY8pnBGs="
+  "encryptionKey": "pPtzncO1jIoiLa/wVVj1/9QO2P3oyT0BtiuLPlGYBRc="
 }

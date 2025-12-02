@@ -4,6 +4,7 @@ import CoursesSection from '@/components/landing/CoursesSection';
 import AIFeaturesSection from '@/components/landing/AIFeaturesSection';
 import ComingSoonSection from '@/components/landing/ComingSoonSection';
 import CTASection from '@/components/landing/CTASection';
+import FooterSection from '@/components/landing/FooterSection';
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
       <AIFeaturesSection />
       <ComingSoonSection />
       <CTASection />
+      <FooterSection />
     </div>
   );
 }

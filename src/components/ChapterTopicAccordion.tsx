@@ -82,11 +82,11 @@ export default function ChapterTopicAccordion({
   const colors = subjectTypeColors[subjectType];
 
   return (
-    <div className="mb-6 overflow-hidden rounded-xl bg-white shadow-lg transition-all duration-300 hover:shadow-xl cursor-pointer">
+    <div className="mb-6 rounded-xl bg-white shadow-lg transition-all duration-300 hover:shadow-xl">
       {/* Accordion Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full p-6 text-left transition-all duration-300 hover:bg-gray-50 focus:outline-none cursor-pointer"
+        className="w-full p-6 text-left transition-all duration-300 hover:bg-gray-50 focus:outline-none cursor-pointer rounded-t-xl"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -154,8 +154,8 @@ export default function ChapterTopicAccordion({
 
       {/* Accordion Content */}
       <div
-        className={`transition-all duration-300 ease-in-out ${
-          isExpanded ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
+        className={`transition-all duration-300 ease-in-out overflow-hidden ${
+          isExpanded ? 'max-h-[9999px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
         <div className="px-6 pb-6">

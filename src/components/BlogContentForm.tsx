@@ -133,7 +133,7 @@ function MenuBar({ editor }: { editor: any }) {
   });
 
   return (
-    <div className="border border-gray-300 border-b-0 rounded-t-lg bg-gray-50 p-2 flex flex-wrap gap-1 relative">
+    <div className="sticky top-[65px] z-30 border-2 border-blue-400 border-b-2 border-b-blue-500 rounded-t-lg bg-gray-50 p-2 flex flex-wrap gap-1 shadow-[0_2px_8px_rgba(59,130,246,0.25),0_1px_3px_rgba(59,130,246,0.15)]">
       {/* Text formatting */}
       <button
         onClick={() => editor.chain().focus().toggleBold().run()}
@@ -1104,7 +1104,7 @@ export default function BlogContentForm({
     <div className="max-w-4xl mx-auto p-6">
       <div className="bg-white rounded-lg shadow-lg">
         {/* Header */}
-        <div className="border-b border-gray-200 px-6 py-4">
+        <div className="sticky top-0 z-40 bg-white border-b border-gray-200 px-6 py-4 rounded-t-lg">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-gray-800">
               {isEditing ? 'Edit Blog Content' : 'Create New Blog Content'}

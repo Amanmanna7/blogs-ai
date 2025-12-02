@@ -1,5 +1,6 @@
 {
   "/_not-found/page": "/_not-found",
+  "/about/page": "/about",
   "/admin/analytics/page": "/admin/analytics",
   "/admin/blog-contents/[id]/edit/page": "/admin/blog-contents/[id]/edit",
   "/admin/blog-contents/[id]/page": "/admin/blog-contents/[id]",

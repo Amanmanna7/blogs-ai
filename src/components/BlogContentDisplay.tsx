@@ -177,6 +177,43 @@ export default function BlogContentDisplay({ content, className = '' }: BlogCont
                       codeElement.className.match(/language-(\w+)/)?.[1] ||
                       '';
 
+      // Always ensure wrapper exists for ALL code blocks (with or without language)
+      // Check if pre element's parent is already a wrapper
+      const parentElement = preElement.parentElement;
+      let wrapper: HTMLElement | null = null;
+      
+      if (parentElement && parentElement.classList.contains('code-block-wrapper')) {
+        // Pre element is already inside a wrapper
+        wrapper = parentElement as HTMLElement;
+      } else if (parentElement) {
+        // Pre element is not in a wrapper, create one
+        wrapper = document.createElement('div');
+        wrapper.className = 'code-block-wrapper';
+        wrapper.style.cssText = 'position: relative; margin: 1.5rem 0;';
+        
+        // Move the pre element into the wrapper
+        parentElement.insertBefore(wrapper, preElement);
+        wrapper.appendChild(preElement);
+      }
+
+      // Apply styling to pre element for all code blocks
+      if (preElement) {
+        (preElement as HTMLElement).style.cssText = `
+          background-color: #1f2937 !important;
+          color: #f9fafb !important;
+          padding: 1rem 1rem 1rem 1rem !important;
+          padding-top: 3.125rem !important;
+          border-radius: 0.75rem !important;
+          overflow-x: auto !important;
+          margin: 1.5rem 0 !important;
+          font-family: 'Fira Code', 'Monaco', 'Consolas', monospace !important;
+          font-size: 0.875rem !important;
+          line-height: 1.5 !important;
+          position: relative !important;
+        `;
+      }
+
+      // Apply syntax highlighting if language is present
       if (language) {
         try {
           // Use highlight.js directly for syntax highlighting
@@ -189,34 +226,17 @@ export default function BlogContentDisplay({ content, className = '' }: BlogCont
           codeElement.classList.add('hljs');
           codeElement.classList.add(`language-${language}`);
           
-            // Force all styles with maximum specificity using cssText
-            (codeElement as HTMLElement).style.cssText = `
-              background-color: #1f2937 !important;
-              color: #f9fafb !important;
-              font-family: 'Fira Code', 'Monaco', 'Consolas', monospace !important;
-              font-size: 0.875rem !important;
-              line-height: 1.5 !important;
-              padding: 1rem !important;
-              border-radius: 0.5rem !important;
-              display: block !important;
-            `;
-            
-            // Add padding to the pre element instead
-            if (preElement) {
-              (preElement as HTMLElement).style.cssText = `
-                background-color: #1f2937 !important;
-                color: #f9fafb !important;
-                padding: 1rem 1rem 1rem 1rem !important;
-                padding-top: 3.125rem !important;
-                border-radius: 0.75rem !important;
-                overflow-x: auto !important;
-                margin: 1.5rem 0 !important;
-                font-family: 'Fira Code', 'Monaco', 'Consolas', monospace !important;
-                font-size: 0.875rem !important;
-                line-height: 1.5 !important;
-                position: relative !important;
-              `;
-            }
+          // Force all styles with maximum specificity using cssText
+          (codeElement as HTMLElement).style.cssText = `
+            background-color: #1f2937 !important;
+            color: #f9fafb !important;
+            font-family: 'Fira Code', 'Monaco', 'Consolas', monospace !important;
+            font-size: 0.875rem !important;
+            line-height: 1.5 !important;
+            padding: 1rem !important;
+            border-radius: 0.5rem !important;
+            display: block !important;
+          `;
           
           // Apply syntax highlighting styles with maximum force
           const syntaxElements = codeElement.querySelectorAll('span');
@@ -255,9 +275,6 @@ export default function BlogContentDisplay({ content, className = '' }: BlogCont
             `;
           });
           
-          // Check if CSS classes are being applied
-          const computedStyle = window.getComputedStyle(codeElement);
-          
           // Check for any conflicting styles after a short delay
           setTimeout(() => {
             const delayedStyle = window.getComputedStyle(codeElement);
@@ -282,72 +299,55 @@ export default function BlogContentDisplay({ content, className = '' }: BlogCont
               }
             }
           }, 200);
-          
-          // Add language label and copy button to the parent container
-          const parentContainer = preElement.parentElement;
-          if (parentContainer && !parentContainer.querySelector('.code-block-wrapper')) {
-            // Create wrapper div
-            const wrapper = document.createElement('div');
-            wrapper.className = 'code-block-wrapper';
-            wrapper.style.cssText = 'position: relative; margin: 1.5rem 0;';
-            
-            // Add language label (top left)
-            const label = document.createElement('div');
-            label.className = 'language-label';
-            label.textContent = language.toUpperCase();
-            label.style.cssText = `
-              position: absolute;
-              top: 0.75rem;
-              left: 0.75rem;
-              background: rgba(0, 0, 0, 0.8);
-              color: #f9fafb;
-              padding: 0.25rem 0.5rem;
-              border-radius: 0.25rem;
-              font-size: 0.75rem;
-              text-transform: uppercase;
-              font-weight: 500;
-              font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
-              z-index: 10;
-              border: 1px solid rgba(255, 255, 255, 0.1);
-              backdrop-filter: blur(4px);
-            `;
-            wrapper.appendChild(label);
-            
-            // Move the pre element into the wrapper
-            parentContainer.insertBefore(wrapper, preElement);
-            wrapper.appendChild(preElement);
-          }
         } catch (error) {
           console.warn(`Failed to highlight code block with language: ${language}`, error);
-          // Fallback: still add language label even if highlighting fails
-          const wrapper = preElement.parentElement?.querySelector('.code-block-wrapper');
-          if (wrapper && !wrapper.querySelector('.language-label')) {
-            const label = document.createElement('div');
-            label.className = 'language-label';
-            label.textContent = language.toUpperCase();
-            label.style.cssText = `
-              position: absolute;
-              top: 0.75rem;
-              left: 0.75rem;
-              background: rgba(0, 0, 0, 0.8);
-              color: #f9fafb;
-              padding: 0.25rem 0.5rem;
-              border-radius: 0.25rem;
-              font-size: 0.75rem;
-              text-transform: uppercase;
-              font-weight: 500;
-              font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
-              z-index: 10;
-              border: 1px solid rgba(255, 255, 255, 0.1);
-              backdrop-filter: blur(4px);
-            `;
-            wrapper.appendChild(label);
-          }
+        }
+      } else {
+        // For code blocks without language, still apply basic styling
+        (codeElement as HTMLElement).style.cssText = `
+          background-color: #1f2937 !important;
+          color: #f9fafb !important;
+          font-family: 'Fira Code', 'Monaco', 'Consolas', monospace !important;
+          font-size: 0.875rem !important;
+          line-height: 1.5 !important;
+          padding: 1rem !important;
+          border-radius: 0.5rem !important;
+          display: block !important;
+        `;
+      }
+
+      // Add language label if language is present
+      if (wrapper && language) {
+        // Check if language label already exists
+        let label = wrapper.querySelector('.language-label') as HTMLElement;
+        if (!label) {
+          label = document.createElement('div');
+          label.className = 'language-label';
+          label.textContent = language.toUpperCase();
+          label.style.cssText = `
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem;
+            background: rgba(0, 0, 0, 0.8);
+            color: #f9fafb;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 500;
+            font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(4px);
+          `;
+          wrapper.appendChild(label);
+        } else {
+          // Update existing label
+          label.textContent = language.toUpperCase();
         }
       }
 
-      // Add copy button functionality (top right)
-      const wrapper = preElement.parentElement?.querySelector('.code-block-wrapper');
+      // Always add copy button functionality (top right) for ALL code blocks
       if (wrapper && !wrapper.querySelector('.copy-button')) {
         const copyButton = document.createElement('button');
         copyButton.className = 'copy-button';
@@ -401,9 +401,26 @@ export default function BlogContentDisplay({ content, className = '' }: BlogCont
         });
         
         copyButton.addEventListener('mouseenter', () => {
-          copyButton.style.cssText += `
+          copyButton.style.cssText = `
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
             background: rgba(0, 0, 0, 0.9);
-            border-color: rgba(255, 255, 255, 0.2);
+            color: #f9fafb;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            opacity: 1;
+            transition: all 0.2s ease;
+            font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+            z-index: 10;
+            backdrop-filter: blur(4px);
+            font-weight: 500;
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
           `;
@@ -446,24 +463,63 @@ export default function BlogContentDisplay({ content, className = '' }: BlogCont
       const codeBlocks = contentRef.current?.querySelectorAll('pre code');
       if (codeBlocks) {
         codeBlocks.forEach((codeElement) => {
-          // Always reapply styles to ensure they persist
-          const language = codeElement.className.match(/language-(\w+)/)?.[1];
           const preElement = codeElement.parentElement;
-          const wrapper = preElement?.parentElement?.querySelector('.code-block-wrapper');
+          if (!preElement) return;
+
+          // Get the language from the pre element's data attribute or class (same as main function)
+          const language = preElement.getAttribute('data-language') || 
+                          preElement.className.match(/language-(\w+)/)?.[1] ||
+                          codeElement.className.match(/language-(\w+)/)?.[1] ||
+                          '';
+
+          // Always ensure wrapper exists for ALL code blocks
+          // Check if pre element's parent is already a wrapper
+          const parentElement = preElement.parentElement;
+          let wrapper: HTMLElement | null = null;
           
+          if (parentElement && parentElement.classList.contains('code-block-wrapper')) {
+            // Pre element is already inside a wrapper
+            wrapper = parentElement as HTMLElement;
+          } else if (parentElement) {
+            // Pre element is not in a wrapper, create one
+            wrapper = document.createElement('div');
+            wrapper.className = 'code-block-wrapper';
+            wrapper.style.cssText = 'position: relative; margin: 1.5rem 0;';
+            
+            // Move the pre element into the wrapper
+            parentElement.insertBefore(wrapper, preElement);
+            wrapper.appendChild(preElement);
+          }
+
+          // Apply styling to pre element for all code blocks
+          if (preElement) {
+            (preElement as HTMLElement).style.cssText = `
+              background-color: #1f2937 !important;
+              color: #f9fafb !important;
+              padding: 1rem 1rem 1rem 1rem !important;
+              padding-top: 3.125rem !important;
+              border-radius: 0.75rem !important;
+              overflow-x: auto !important;
+              margin: 1.5rem 0 !important;
+              font-family: 'Fira Code', 'Monaco', 'Consolas', monospace !important;
+              font-size: 0.875rem !important;
+              line-height: 1.5 !important;
+              position: relative !important;
+            `;
+          }
+
           // Check if we need to reapply highlighting OR if buttons are missing
           const needsHighlighting = language && !codeElement.classList.contains('hljs');
-          const needsButtons = wrapper && (!wrapper.querySelector('.language-label') || !wrapper.querySelector('.copy-button'));
+          const needsCopyButton = wrapper && !wrapper.querySelector('.copy-button');
+          const needsLanguageLabel = wrapper && language && !wrapper.querySelector('.language-label');
           
-          if (needsHighlighting || needsButtons) {
-            
+          if (needsHighlighting) {
             try {
-              if (language) {
-                const result = hljs.highlight(codeElement.textContent || '', { language });
-                codeElement.innerHTML = result.value;
-                codeElement.classList.add('hljs');
-                codeElement.classList.add(`language-${language}`);
-              
+              const result = hljs.highlight(codeElement.textContent || '', { language });
+              codeElement.innerHTML = result.value;
+              codeElement.classList.add('hljs');
+              codeElement.classList.add(`language-${language}`);
+            
               // Force all styles with maximum specificity
               (codeElement as HTMLElement).style.cssText = `
                 background-color: #1f2937 !important;
@@ -475,23 +531,6 @@ export default function BlogContentDisplay({ content, className = '' }: BlogCont
                 border-radius: 0.5rem !important;
                 display: block !important;
               `;
-              
-              // Add padding to the pre element instead
-              if (preElement) {
-                (preElement as HTMLElement).style.cssText = `
-                  background-color: #1f2937 !important;
-                  color: #f9fafb !important;
-                  padding: 1rem 1rem 1rem 1rem !important;
-                  padding-top: 3.125rem !important;
-                  border-radius: 0.75rem !important;
-                  overflow-x: auto !important;
-                  margin: 1.5rem 0 !important;
-                  font-family: 'Fira Code', 'Monaco', 'Consolas', monospace !important;
-                  font-size: 0.875rem !important;
-                  line-height: 1.5 !important;
-                  position: relative !important;
-                `;
-              }
               
               // Apply syntax highlighting styles with maximum force
               const syntaxElements = codeElement.querySelectorAll('span');
@@ -529,53 +568,65 @@ export default function BlogContentDisplay({ content, className = '' }: BlogCont
                   background: transparent !important;
                 `;
               });
-              
-              // Ensure wrapper exists and add buttons
-              let wrapper = preElement?.parentElement?.querySelector('.code-block-wrapper');
-              
-              // Create wrapper if it doesn't exist
-              if (!wrapper && preElement) {
-                const parentContainer = preElement.parentElement;
-                if (parentContainer) {
-                  wrapper = document.createElement('div');
-                  wrapper.className = 'code-block-wrapper';
-                  (wrapper as HTMLElement).style.cssText = 'position: relative; margin: 1.5rem 0;';
-                  
-                  // Move the pre element into the wrapper
-                  parentContainer.insertBefore(wrapper, preElement);
-                  wrapper.appendChild(preElement);
-                }
-              }
-              
-              if (wrapper) {
-                // Always ensure language label exists
-                if (!wrapper.querySelector('.language-label')) {
-                  const label = document.createElement('div');
-                  label.className = 'language-label';
-                  label.textContent = language.toUpperCase();
-                  label.style.cssText = `
-                    position: absolute;
-                    top: 0.75rem;
-                    left: 0.75rem;
-                    background: rgba(0, 0, 0, 0.8);
-                    color: #f9fafb;
-                    padding: 0.25rem 0.5rem;
-                    border-radius: 0.25rem;
-                    font-size: 0.75rem;
-                    text-transform: uppercase;
-                    font-weight: 500;
-                    font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
-                    z-index: 10;
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                    backdrop-filter: blur(4px);
-                  `;
-                  wrapper.appendChild(label);
-                }
-                
-                // Always ensure copy button exists
-                if (!wrapper.querySelector('.copy-button')) {
-                  const copyButton = document.createElement('button');
-                  copyButton.className = 'copy-button';
+            } catch (error) {
+              console.warn('Failed to reapply syntax highlighting:', error);
+            }
+          } else if (!language) {
+            // For code blocks without language, still apply basic styling
+            (codeElement as HTMLElement).style.cssText = `
+              background-color: #1f2937 !important;
+              color: #f9fafb !important;
+              font-family: 'Fira Code', 'Monaco', 'Consolas', monospace !important;
+              font-size: 0.875rem !important;
+              line-height: 1.5 !important;
+              padding: 1rem !important;
+              border-radius: 0.5rem !important;
+              display: block !important;
+            `;
+          }
+
+          // Always ensure copy button exists for ALL code blocks
+          if (wrapper && needsCopyButton) {
+            const copyButton = document.createElement('button');
+            copyButton.className = 'copy-button';
+            copyButton.innerHTML = `
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              Copy
+            `;
+            copyButton.style.cssText = `
+              position: absolute;
+              top: 0.75rem;
+              right: 0.75rem;
+              background: rgba(0, 0, 0, 0.8);
+              color: #f9fafb;
+              border: 1px solid rgba(255, 255, 255, 0.1);
+              padding: 0.25rem 0.5rem;
+              border-radius: 0.25rem;
+              font-size: 0.75rem;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              gap: 0.25rem;
+              opacity: 1;
+              transition: all 0.2s ease;
+              font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+              z-index: 10;
+              backdrop-filter: blur(4px);
+              font-weight: 500;
+            `;
+            
+            copyButton.addEventListener('click', () => {
+              navigator.clipboard.writeText(codeElement.textContent || '').then(() => {
+                copyButton.innerHTML = `
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20,6 9,17 4,12"></polyline>
+                  </svg>
+                  Copied!
+                `;
+                setTimeout(() => {
                   copyButton.innerHTML = `
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -583,93 +634,37 @@ export default function BlogContentDisplay({ content, className = '' }: BlogCont
                     </svg>
                     Copy
                   `;
-                  copyButton.style.cssText = `
-                    position: absolute;
-                    top: 0.75rem;
-                    right: 0.75rem;
-                    background: rgba(0, 0, 0, 0.8);
-                    color: #f9fafb;
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                    padding: 0.25rem 0.5rem;
-                    border-radius: 0.25rem;
-                    font-size: 0.75rem;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    gap: 0.25rem;
-                    opacity: 1;
-                    transition: all 0.2s ease;
-                    font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
-                    z-index: 10;
-                    backdrop-filter: blur(4px);
-                    font-weight: 500;
-                  `;
-                  
-                  copyButton.addEventListener('click', () => {
-                    navigator.clipboard.writeText(codeElement.textContent || '').then(() => {
-                      copyButton.innerHTML = `
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <polyline points="20,6 9,17 4,12"></polyline>
-                        </svg>
-                        Copied!
-                      `;
-                      setTimeout(() => {
-                        copyButton.innerHTML = `
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                          </svg>
-                          Copy
-                        `;
-                      }, 2000);
-                    });
-                  });
-                  
-                  wrapper.appendChild(copyButton);
-                }
-              }
-              }
-            } catch (error) {
-              console.warn('Failed to reapply syntax highlighting:', error);
-            }
-          } else if (needsButtons && wrapper) {
-            // Just add buttons if they're missing (even if highlighting is fine)
+                }, 2000);
+              });
+            });
             
-            // Add language label if missing
-            if (!wrapper.querySelector('.language-label') && language) {
-              const label = document.createElement('div');
-              label.className = 'language-label';
-              label.textContent = language.toUpperCase();
-              label.style.cssText = `
+            copyButton.addEventListener('mouseenter', () => {
+              copyButton.style.cssText = `
                 position: absolute;
                 top: 0.75rem;
-                left: 0.75rem;
-                background: rgba(0, 0, 0, 0.8);
+                right: 0.75rem;
+                background: rgba(0, 0, 0, 0.9);
                 color: #f9fafb;
+                border: 1px solid rgba(255, 255, 255, 0.2);
                 padding: 0.25rem 0.5rem;
                 border-radius: 0.25rem;
                 font-size: 0.75rem;
-                text-transform: uppercase;
-                font-weight: 500;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 0.25rem;
+                opacity: 1;
+                transition: all 0.2s ease;
                 font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
                 z-index: 10;
-                border: 1px solid rgba(255, 255, 255, 0.1);
                 backdrop-filter: blur(4px);
+                font-weight: 500;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
               `;
-              wrapper.appendChild(label);
-            }
+            });
             
-            // Add copy button if missing
-            if (!wrapper.querySelector('.copy-button')) {
-              const copyButton = document.createElement('button');
-              copyButton.className = 'copy-button';
-              copyButton.innerHTML = `
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-                Copy
-              `;
+            copyButton.addEventListener('mouseleave', () => {
               copyButton.style.cssText = `
                 position: absolute;
                 top: 0.75rem;
@@ -691,29 +686,33 @@ export default function BlogContentDisplay({ content, className = '' }: BlogCont
                 backdrop-filter: blur(4px);
                 font-weight: 500;
               `;
-              
-              copyButton.addEventListener('click', () => {
-                navigator.clipboard.writeText(codeElement.textContent || '').then(() => {
-                  copyButton.innerHTML = `
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polyline points="20,6 9,17 4,12"></polyline>
-                    </svg>
-                    Copied!
-                  `;
-                  setTimeout(() => {
-                    copyButton.innerHTML = `
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                      </svg>
-                      Copy
-                    `;
-                  }, 2000);
-                });
-              });
-              
-              wrapper.appendChild(copyButton);
-            }
+            });
+            
+            wrapper.appendChild(copyButton);
+          }
+
+          // Add language label if language is present and missing
+          if (wrapper && needsLanguageLabel) {
+            const label = document.createElement('div');
+            label.className = 'language-label';
+            label.textContent = language.toUpperCase();
+            label.style.cssText = `
+              position: absolute;
+              top: 0.75rem;
+              left: 0.75rem;
+              background: rgba(0, 0, 0, 0.8);
+              color: #f9fafb;
+              padding: 0.25rem 0.5rem;
+              border-radius: 0.25rem;
+              font-size: 0.75rem;
+              text-transform: uppercase;
+              font-weight: 500;
+              font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+              z-index: 10;
+              border: 1px solid rgba(255, 255, 255, 0.1);
+              backdrop-filter: blur(4px);
+            `;
+            wrapper.appendChild(label);
           }
         });
       }

@@ -223,6 +223,51 @@ function BlogContent() {
                 categories={blog.categories.map(c => c.category)}
                 sequences={blog.sequences}
               />
+              
+              {/* AI Chat CTA - Only show when chat is closed */}
+              {!isChatOpen && (
+                <div className="mt-6 relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 border border-blue-200 p-4">
+                  {/* Decorative background elements */}
+                  <div className="absolute -top-4 -right-4 h-16 w-16 rounded-full bg-blue-200/20 blur-xl"></div>
+                  <div className="absolute -bottom-3 -left-3 h-12 w-12 rounded-full bg-blue-300/15 blur-lg"></div>
+                  
+                  <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center shadow-md flex-shrink-0">
+                          <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <h3 className="text-base font-semibold text-gray-900">
+                            Have any doubt or need detailed explanation?
+                          </h3>
+                          <p className="text-xs text-gray-600 mt-0.5">
+                            Get instant answers from our AI learning assistant
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <button
+                      onClick={() => setIsChatOpen(true)}
+                      className="group relative overflow-hidden inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-2.5 text-white font-medium text-sm hover:from-blue-700 hover:to-blue-800 transition-all duration-300 hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-md w-full sm:w-auto flex-shrink-0 cursor-pointer"
+                    >
+                      {/* Shimmer effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out"></div>
+                      
+                      <svg className="relative z-10 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                      </svg>
+                      <span className="relative z-10">Chat with AI</span>
+                      <svg className="relative z-10 h-3 w-3 group-hover:translate-x-0.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
 
@@ -276,6 +321,7 @@ function BlogContent() {
                 </div>
               ) : null;
             })()}
+
           </div>
 
           {/* Right Column - Blog Information or Chat */}
@@ -297,7 +343,63 @@ function BlogContent() {
             ) : (
               /* Blog Information when chat is closed */
               <div className="space-y-6">
-                {/* Quiz Button - only show when chapter is present */}
+                {/* AI Chat Assistant - First */}
+                <AIChat 
+                  prompt={`You are an AI learning assistant helping users understand the blog content: "${blog?.title}". 
+                  You can answer questions about the topic, provide explanations, clarify concepts, and help with learning. 
+                  Be helpful, accurate, and encourage learning.`}
+                  placeholder="Ask me about this lesson..."
+                  blogTitle={blog?.title || "this content"}
+                  isChatOpen={isChatOpen}
+                  onChatToggle={setIsChatOpen}
+                  blogId={blog?.id}
+                  chapterTopicId={chapterId || undefined}
+                />
+
+                {/* Chapter Progress (only when chapter present and user is signed in) - Second */}
+                {chapterLessons && isSignedIn && chapterProgress ? (
+                  <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-blue-100/50 p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Chapter Progress</h3>
+                    <div className="mb-4">
+                      <div className="flex justify-between text-sm text-gray-600 mb-2">
+                        <span>Chapter: {chapterLessons.name}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                        <div 
+                          className="bg-gradient-to-r from-blue-600 to-purple-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${chapterProgress.progressPercentage}%` }}
+                        ></div>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-500">
+                        <span>{chapterProgress.completedBlogs}/{chapterProgress.totalBlogs} Lessons Completed</span>
+                        <span>{chapterProgress.progressPercentage}% Complete</span>
+                      </div>
+                    </div>
+                    
+                    {/* Progress Status */}
+                    <div className="mt-4 flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                        <span className="text-sm text-gray-600">Learning in Progress</span>
+                      </div>
+                      {chapterProgress.progressPercentage === 100 && (
+                        <div className="flex items-center space-x-1 text-green-600">
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span className="text-sm font-medium">Chapter Completed!</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : chapterLessons && isSignedIn && !chapterProgress ? (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                    <h4 className="font-semibold text-red-800">Progress Not Available</h4>
+                    <p className="text-sm text-red-700">Chapter data is available but chapter progress could not be loaded.</p>
+                  </div>
+                ) : null}
+
+                {/* Quiz Button - only show when chapter is present - Third */}
                 {chapterId && (
                   <QuizButton
                     blogId={blog.id}
@@ -306,7 +408,65 @@ function BlogContent() {
                   />
                 )}
 
-                {/* Blog Details Card */}
+                {/* Chapter Lessons Sidebar (only when chapter present) - Fourth */}
+                {chapterLessons && (
+                  <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-blue-100/50 p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Other lessons in this chapter</h3>
+                    <div className="space-y-2">
+                      {chapterLessons.blogs.map((b, idx) => {
+                        const isActive = b.slug === slug;
+                        return (
+                          <Link
+                            key={b.id}
+                            href={`/blogs/${b.slug}?chapter=${chapterId}`}
+                            className={`flex items-center justify-between rounded-lg border p-3 transition-colors ${
+                              isActive ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-white border-gray-200 hover:bg-gray-50'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-semibold ${
+                                isActive ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
+                              }`}>
+                                {idx + 1}
+                              </div>
+                              <span className="text-sm font-medium truncate max-w-[220px]">{b.title}</span>
+                            </div>
+                            <svg className={`h-4 w-4 ${isActive ? 'text-blue-600' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Author Card - Fifth */}
+                <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-blue-100/50 p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Author</h3>
+                  
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                      {blog.author.imageUrl ? (
+                        <img 
+                          src={blog.author.imageUrl} 
+                          alt={blog.author.name}
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-blue-600 font-semibold text-lg">
+                          {blog.author.name.charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">{blog.author.name}</h4>
+                      <p className="text-sm text-gray-600">{blog.author.email}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Blog Details Card - Sixth */}
                 <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-blue-100/50 p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Blog Details</h3>
                   
@@ -347,75 +507,39 @@ function BlogContent() {
                   </div>
                 </div>
 
-                {/* Course Progress (only when chapter present) */}
-                {/* {courseProgress && (
+                {/* Tags Card - Seventh */}
+                {blog.tags.length > 0 && (
                   <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-blue-100/50 p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Course Progress</h3>
-                    <div className="mb-4">
-                      <div className="flex justify-between text-sm text-gray-600 mb-2">
-                        <span>Overall Progress</span>
-                        <span>{courseProgress.completedBlogs}/{courseProgress.totalBlogs} Lessons</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-gradient-to-r from-blue-600 to-purple-600 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${courseProgress.progressPercentage}%` }}
-                        ></div>
-                      </div>
-                      <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>{courseProgress.progressPercentage}% Complete</span>
-                        {courseProgress.progressPercentage === 100 && (
-                          <span className="text-green-600 font-medium">🎉 Course Completed!</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )} */}
-
-                {/* Chapter Lessons Sidebar (only when chapter present) */}
-                {chapterLessons && (
-                  <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-blue-100/50 p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Other lessons in this chapter</h3>
-                    <div className="space-y-2">
-                      {chapterLessons.blogs.map((b, idx) => {
-                        const isActive = b.slug === slug;
-                        return (
-                          <Link
-                            key={b.id}
-                            href={`/blogs/${b.slug}?chapter=${chapterId}`}
-                            className={`flex items-center justify-between rounded-lg border p-3 transition-colors ${
-                              isActive ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-white border-gray-200 hover:bg-gray-50'
-                            }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-semibold ${
-                                isActive ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
-                              }`}>
-                                {idx + 1}
-                              </div>
-                              <span className="text-sm font-medium truncate max-w-[220px]">{b.title}</span>
-                            </div>
-                            <svg className={`h-4 w-4 ${isActive ? 'text-blue-600' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                          </Link>
-                        );
-                      })}
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Tags</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {blog.tags.map((tag, index) => (
+                        <span
+                          key={index}
+                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                        >
+                          {tag}
+                        </span>
+                      ))}
                     </div>
                   </div>
                 )}
 
-                {/* AI Chat Assistant */}
-                <AIChat 
-                  prompt={`You are an AI learning assistant helping users understand the blog content: "${blog?.title}". 
-                  You can answer questions about the topic, provide explanations, clarify concepts, and help with learning. 
-                  Be helpful, accurate, and encourage learning.`}
-                  placeholder="Ask me about this lesson..."
-                  blogTitle={blog?.title || "this content"}
-                  isChatOpen={isChatOpen}
-                  onChatToggle={setIsChatOpen}
-                  className="mt-6"
-                />
+                {/* Categories Card - Eighth */}
+                {blog.categories.length > 0 && (
+                  <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-blue-100/50 p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Categories</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {blog.categories.map((cat) => (
+                        <span
+                          key={cat.category.id}
+                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                        >
+                          {cat.category.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Sign In to Save Progress (only when chapter present and user not signed in) */}
                 {chapterLessons && !isSignedIn && (
@@ -470,108 +594,6 @@ function BlogContent() {
                           <span>AI Support</span>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Chapter Progress (only when chapter present and user is signed in) */}
-                {chapterLessons && isSignedIn && chapterProgress ? (
-                  <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-blue-100/50 p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Chapter Progress</h3>
-                    <div className="mb-4">
-                      <div className="flex justify-between text-sm text-gray-600 mb-2">
-                        <span>Chapter: {chapterLessons.name}</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                        <div 
-                          className="bg-gradient-to-r from-blue-600 to-purple-600 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${chapterProgress.progressPercentage}%` }}
-                        ></div>
-                      </div>
-                      <div className="flex justify-between text-xs text-gray-500">
-                        <span>{chapterProgress.completedBlogs}/{chapterProgress.totalBlogs} Lessons Completed</span>
-                        <span>{chapterProgress.progressPercentage}% Complete</span>
-                      </div>
-                    </div>
-                    
-                    {/* Progress Status */}
-                    <div className="mt-4 flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <div className="h-2 w-2 rounded-full bg-blue-500"></div>
-                        <span className="text-sm text-gray-600">Learning in Progress</span>
-                      </div>
-                      {chapterProgress.progressPercentage === 100 && (
-                        <div className="flex items-center space-x-1 text-green-600">
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                          <span className="text-sm font-medium">Chapter Completed!</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ) : chapterLessons && isSignedIn && !chapterProgress ? (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-                    <h4 className="font-semibold text-red-800">Progress Not Available</h4>
-                    <p className="text-sm text-red-700">Chapter data is available but chapter progress could not be loaded.</p>
-                  </div>
-                ) : null}
-
-                {/* Author Card */}
-                <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-blue-100/50 p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Author</h3>
-                  
-                  <div className="flex items-center">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                      {blog.author.imageUrl ? (
-                        <img 
-                          src={blog.author.imageUrl} 
-                          alt={blog.author.name}
-                          className="w-12 h-12 rounded-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-blue-600 font-semibold text-lg">
-                          {blog.author.name.charAt(0).toUpperCase()}
-                        </span>
-                      )}
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900">{blog.author.name}</h4>
-                      <p className="text-sm text-gray-600">{blog.author.email}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Tags Card */}
-                {blog.tags.length > 0 && (
-                  <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-blue-100/50 p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Tags</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {blog.tags.map((tag, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Categories Card */}
-                {blog.categories.length > 0 && (
-                  <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-blue-100/50 p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Categories</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {blog.categories.map((cat) => (
-                        <span
-                          key={cat.category.id}
-                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
-                        >
-                          {cat.category.name}
-                        </span>
-                      ))}
                     </div>
                   </div>
                 )}

@@ -134,12 +134,10 @@ export default function AIFeaturesSection() {
                 </div>
               </div>
               
-              {/* Action button */}
-              <div className="flex justify-center">
-                <button className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 cursor-pointer shadow-lg">
-                  Start Chatting with AI
-                </button>
-              </div>
+              {/* Availability message */}
+              <p className="mt-8 text-center text-base text-gray-600 leading-relaxed">
+                <span className="font-semibold text-blue-600">Your AI guide</span> travels with you inside every lesson, ready to explain tough concepts, summarize sections, and answer follow-up questions right where you’re learning.
+              </p>
             </div>
             
             {/* Subtle background decoration */}

@@ -38,63 +38,57 @@ module.exports=[47983,(a,b,c)=>{b.exports=function(a){let b="[A-Za-zА-Яа-яё
         .blog-content pre code.hljs .hljs-link {
           color: #22d3ee !important;
         }
-      `,document.head.appendChild(b));let c=f.current?.querySelectorAll("pre code");c&&c.forEach((a,b)=>{let c=a.parentElement;if(!c)return;let d=c.getAttribute("data-language")||c.className.match(/language-(\w+)/)?.[1]||a.className.match(/language-(\w+)/)?.[1]||"";if(d)try{let b=e.highlight(a.textContent||"",{language:d});a.innerHTML=b.value,a.classList.add("hljs"),a.classList.add(`language-${d}`),a.style.cssText=`
-              background-color: #1f2937 !important;
-              color: #f9fafb !important;
-              font-family: 'Fira Code', 'Monaco', 'Consolas', monospace !important;
-              font-size: 0.875rem !important;
-              line-height: 1.5 !important;
-              padding: 1rem !important;
-              border-radius: 0.5rem !important;
-              display: block !important;
-            `,c&&(c.style.cssText=`
-                background-color: #1f2937 !important;
-                color: #f9fafb !important;
-                padding: 1rem 1rem 1rem 1rem !important;
-                padding-top: 3.125rem !important;
-                border-radius: 0.75rem !important;
-                overflow-x: auto !important;
-                margin: 1.5rem 0 !important;
-                font-family: 'Fira Code', 'Monaco', 'Consolas', monospace !important;
-                font-size: 0.875rem !important;
-                line-height: 1.5 !important;
-                position: relative !important;
-              `),a.querySelectorAll("span").forEach(a=>{let b=a.classList,c="#f9fafb",d="normal",e="normal";b.contains("hljs-keyword")||b.contains("hljs-selector-tag")||b.contains("hljs-subst")?(c="#f472b6",d="bold"):b.contains("hljs-string")||b.contains("hljs-doctag")?c="#34d399":b.contains("hljs-comment")||b.contains("hljs-quote")?(c="#6b7280",e="italic"):b.contains("hljs-number")||b.contains("hljs-literal")?c="#fbbf24":b.contains("hljs-title")||b.contains("hljs-section")?(c="#60a5fa",d="bold"):b.contains("hljs-type")?c="#a78bfa":b.contains("hljs-tag")||b.contains("hljs-name")?c="#fb7185":(b.contains("hljs-regexp")||b.contains("hljs-link"))&&(c="#22d3ee"),a.style.cssText=`
+      `,document.head.appendChild(b));let c=f.current?.querySelectorAll("pre code");c&&c.forEach((a,b)=>{let c=a.parentElement;if(!c)return;let d=c.getAttribute("data-language")||c.className.match(/language-(\w+)/)?.[1]||a.className.match(/language-(\w+)/)?.[1]||"",f=c.parentElement,g=null;if(f&&f.classList.contains("code-block-wrapper")?g=f:f&&((g=document.createElement("div")).className="code-block-wrapper",g.style.cssText="position: relative; margin: 1.5rem 0;",f.insertBefore(g,c),g.appendChild(c)),c&&(c.style.cssText=`
+          background-color: #1f2937 !important;
+          color: #f9fafb !important;
+          padding: 1rem 1rem 1rem 1rem !important;
+          padding-top: 3.125rem !important;
+          border-radius: 0.75rem !important;
+          overflow-x: auto !important;
+          margin: 1.5rem 0 !important;
+          font-family: 'Fira Code', 'Monaco', 'Consolas', monospace !important;
+          font-size: 0.875rem !important;
+          line-height: 1.5 !important;
+          position: relative !important;
+        `),d)try{let b=e.highlight(a.textContent||"",{language:d});a.innerHTML=b.value,a.classList.add("hljs"),a.classList.add(`language-${d}`),a.style.cssText=`
+            background-color: #1f2937 !important;
+            color: #f9fafb !important;
+            font-family: 'Fira Code', 'Monaco', 'Consolas', monospace !important;
+            font-size: 0.875rem !important;
+            line-height: 1.5 !important;
+            padding: 1rem !important;
+            border-radius: 0.5rem !important;
+            display: block !important;
+          `,a.querySelectorAll("span").forEach(a=>{let b=a.classList,c="#f9fafb",d="normal",e="normal";b.contains("hljs-keyword")||b.contains("hljs-selector-tag")||b.contains("hljs-subst")?(c="#f472b6",d="bold"):b.contains("hljs-string")||b.contains("hljs-doctag")?c="#34d399":b.contains("hljs-comment")||b.contains("hljs-quote")?(c="#6b7280",e="italic"):b.contains("hljs-number")||b.contains("hljs-literal")?c="#fbbf24":b.contains("hljs-title")||b.contains("hljs-section")?(c="#60a5fa",d="bold"):b.contains("hljs-type")?c="#a78bfa":b.contains("hljs-tag")||b.contains("hljs-name")?c="#fb7185":(b.contains("hljs-regexp")||b.contains("hljs-link"))&&(c="#22d3ee"),a.style.cssText=`
               color: ${c} !important;
               font-weight: ${d} !important;
               font-style: ${e} !important;
               background: transparent !important;
-            `}),window.getComputedStyle(a),setTimeout(()=>{let b=window.getComputedStyle(a);if("rgb(31, 41, 55)"!==b.backgroundColor||"rgb(249, 250, 251)"!==b.color){console.warn("Styles are being overridden! Reapplying...");try{let b=e.highlight(a.textContent||"",{language:d});a.innerHTML=b.value,a.classList.add("hljs"),a.classList.add(`language-${d}`),a.style.setProperty("background-color","#1f2937","important"),a.style.setProperty("color","#f9fafb","important")}catch(a){console.error("Failed to reapply highlighting:",a)}}},200);let f=c.parentElement;if(f&&!f.querySelector(".code-block-wrapper")){let a=document.createElement("div");a.className="code-block-wrapper",a.style.cssText="position: relative; margin: 1.5rem 0;";let b=document.createElement("div");b.className="language-label",b.textContent=d.toUpperCase(),b.style.cssText=`
-              position: absolute;
-              top: 0.75rem;
-              left: 0.75rem;
-              background: rgba(0, 0, 0, 0.8);
-              color: #f9fafb;
-              padding: 0.25rem 0.5rem;
-              border-radius: 0.25rem;
-              font-size: 0.75rem;
-              text-transform: uppercase;
-              font-weight: 500;
-              font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
-              z-index: 10;
-              border: 1px solid rgba(255, 255, 255, 0.1);
-              backdrop-filter: blur(4px);
-            `,a.appendChild(b),f.insertBefore(a,c),a.appendChild(c)}}catch(b){console.warn(`Failed to highlight code block with language: ${d}`,b);let a=c.parentElement?.querySelector(".code-block-wrapper");if(a&&!a.querySelector(".language-label")){let b=document.createElement("div");b.className="language-label",b.textContent=d.toUpperCase(),b.style.cssText=`
-              position: absolute;
-              top: 0.75rem;
-              left: 0.75rem;
-              background: rgba(0, 0, 0, 0.8);
-              color: #f9fafb;
-              padding: 0.25rem 0.5rem;
-              border-radius: 0.25rem;
-              font-size: 0.75rem;
-              text-transform: uppercase;
-              font-weight: 500;
-              font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
-              z-index: 10;
-              border: 1px solid rgba(255, 255, 255, 0.1);
-              backdrop-filter: blur(4px);
-            `,a.appendChild(b)}}let f=c.parentElement?.querySelector(".code-block-wrapper");if(f&&!f.querySelector(".copy-button")){let b=document.createElement("button");b.className="copy-button",b.innerHTML=`
+            `}),setTimeout(()=>{let b=window.getComputedStyle(a);if("rgb(31, 41, 55)"!==b.backgroundColor||"rgb(249, 250, 251)"!==b.color){console.warn("Styles are being overridden! Reapplying...");try{let b=e.highlight(a.textContent||"",{language:d});a.innerHTML=b.value,a.classList.add("hljs"),a.classList.add(`language-${d}`),a.style.setProperty("background-color","#1f2937","important"),a.style.setProperty("color","#f9fafb","important")}catch(a){console.error("Failed to reapply highlighting:",a)}}},200)}catch(a){console.warn(`Failed to highlight code block with language: ${d}`,a)}else a.style.cssText=`
+          background-color: #1f2937 !important;
+          color: #f9fafb !important;
+          font-family: 'Fira Code', 'Monaco', 'Consolas', monospace !important;
+          font-size: 0.875rem !important;
+          line-height: 1.5 !important;
+          padding: 1rem !important;
+          border-radius: 0.5rem !important;
+          display: block !important;
+        `;if(g&&d){let a=g.querySelector(".language-label");a?a.textContent=d.toUpperCase():((a=document.createElement("div")).className="language-label",a.textContent=d.toUpperCase(),a.style.cssText=`
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem;
+            background: rgba(0, 0, 0, 0.8);
+            color: #f9fafb;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 500;
+            font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(4px);
+          `,g.appendChild(a))}if(g&&!g.querySelector(".copy-button")){let b=document.createElement("button");b.className="copy-button",b.innerHTML=`
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -131,9 +125,26 @@ module.exports=[47983,(a,b,c)=>{b.exports=function(a){let b="[A-Za-zА-Яа-яё
                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                 </svg>
                 Copy
-              `},2e3)})}),b.addEventListener("mouseenter",()=>{b.style.cssText+=`
+              `},2e3)})}),b.addEventListener("mouseenter",()=>{b.style.cssText=`
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
             background: rgba(0, 0, 0, 0.9);
-            border-color: rgba(255, 255, 255, 0.2);
+            color: #f9fafb;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            opacity: 1;
+            transition: all 0.2s ease;
+            font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+            z-index: 10;
+            backdrop-filter: blur(4px);
+            font-weight: 500;
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
           `}),b.addEventListener("mouseleave",()=>{b.style.cssText=`
@@ -156,7 +167,19 @@ module.exports=[47983,(a,b,c)=>{b.exports=function(a){let b="[A-Za-zА-Яа-яё
             z-index: 10;
             backdrop-filter: blur(4px);
             font-weight: 500;
-          `}),f.appendChild(b)}});let d=setInterval(()=>{let a=f.current?.querySelectorAll("pre code");a&&a.forEach(a=>{let b=a.className.match(/language-(\w+)/)?.[1],c=a.parentElement,d=c?.parentElement?.querySelector(".code-block-wrapper"),f=b&&!a.classList.contains("hljs"),g=d&&(!d.querySelector(".language-label")||!d.querySelector(".copy-button"));if(f||g)try{if(b){let d=e.highlight(a.textContent||"",{language:b});a.innerHTML=d.value,a.classList.add("hljs"),a.classList.add(`language-${b}`),a.style.cssText=`
+          `}),g.appendChild(b)}});let d=setInterval(()=>{let a=f.current?.querySelectorAll("pre code");a&&a.forEach(a=>{let b=a.parentElement;if(!b)return;let c=b.getAttribute("data-language")||b.className.match(/language-(\w+)/)?.[1]||a.className.match(/language-(\w+)/)?.[1]||"",d=b.parentElement,f=null;d&&d.classList.contains("code-block-wrapper")?f=d:d&&((f=document.createElement("div")).className="code-block-wrapper",f.style.cssText="position: relative; margin: 1.5rem 0;",d.insertBefore(f,b),f.appendChild(b)),b&&(b.style.cssText=`
+              background-color: #1f2937 !important;
+              color: #f9fafb !important;
+              padding: 1rem 1rem 1rem 1rem !important;
+              padding-top: 3.125rem !important;
+              border-radius: 0.75rem !important;
+              overflow-x: auto !important;
+              margin: 1.5rem 0 !important;
+              font-family: 'Fira Code', 'Monaco', 'Consolas', monospace !important;
+              font-size: 0.875rem !important;
+              line-height: 1.5 !important;
+              position: relative !important;
+            `);let g=c&&!a.classList.contains("hljs"),h=f&&!f.querySelector(".copy-button"),i=f&&c&&!f.querySelector(".language-label");if(g)try{let b=e.highlight(a.textContent||"",{language:c});a.innerHTML=b.value,a.classList.add("hljs"),a.classList.add(`language-${c}`),a.style.cssText=`
                 background-color: #1f2937 !important;
                 color: #f9fafb !important;
                 font-family: 'Fira Code', 'Monaco', 'Consolas', monospace !important;
@@ -165,97 +188,80 @@ module.exports=[47983,(a,b,c)=>{b.exports=function(a){let b="[A-Za-zА-Яа-яё
                 padding: 1rem !important;
                 border-radius: 0.5rem !important;
                 display: block !important;
-              `,c&&(c.style.cssText=`
-                  background-color: #1f2937 !important;
-                  color: #f9fafb !important;
-                  padding: 1rem 1rem 1rem 1rem !important;
-                  padding-top: 3.125rem !important;
-                  border-radius: 0.75rem !important;
-                  overflow-x: auto !important;
-                  margin: 1.5rem 0 !important;
-                  font-family: 'Fira Code', 'Monaco', 'Consolas', monospace !important;
-                  font-size: 0.875rem !important;
-                  line-height: 1.5 !important;
-                  position: relative !important;
-                `),a.querySelectorAll("span").forEach(a=>{let b=a.classList,c="#f9fafb",d="normal",e="normal";b.contains("hljs-keyword")||b.contains("hljs-selector-tag")||b.contains("hljs-subst")?(c="#f472b6",d="bold"):b.contains("hljs-string")||b.contains("hljs-doctag")?c="#34d399":b.contains("hljs-comment")||b.contains("hljs-quote")?(c="#6b7280",e="italic"):b.contains("hljs-number")||b.contains("hljs-literal")?c="#fbbf24":b.contains("hljs-title")||b.contains("hljs-section")?(c="#60a5fa",d="bold"):b.contains("hljs-type")?c="#a78bfa":b.contains("hljs-tag")||b.contains("hljs-name")?c="#fb7185":(b.contains("hljs-regexp")||b.contains("hljs-link"))&&(c="#22d3ee"),a.style.cssText=`
+              `,a.querySelectorAll("span").forEach(a=>{let b=a.classList,c="#f9fafb",d="normal",e="normal";b.contains("hljs-keyword")||b.contains("hljs-selector-tag")||b.contains("hljs-subst")?(c="#f472b6",d="bold"):b.contains("hljs-string")||b.contains("hljs-doctag")?c="#34d399":b.contains("hljs-comment")||b.contains("hljs-quote")?(c="#6b7280",e="italic"):b.contains("hljs-number")||b.contains("hljs-literal")?c="#fbbf24":b.contains("hljs-title")||b.contains("hljs-section")?(c="#60a5fa",d="bold"):b.contains("hljs-type")?c="#a78bfa":b.contains("hljs-tag")||b.contains("hljs-name")?c="#fb7185":(b.contains("hljs-regexp")||b.contains("hljs-link"))&&(c="#22d3ee"),a.style.cssText=`
                   color: ${c} !important;
                   font-weight: ${d} !important;
                   font-style: ${e} !important;
                   background: transparent !important;
-                `});let f=c?.parentElement?.querySelector(".code-block-wrapper");if(!f&&c){let a=c.parentElement;a&&((f=document.createElement("div")).className="code-block-wrapper",f.style.cssText="position: relative; margin: 1.5rem 0;",a.insertBefore(f,c),f.appendChild(c))}if(f){if(!f.querySelector(".language-label")){let a=document.createElement("div");a.className="language-label",a.textContent=b.toUpperCase(),a.style.cssText=`
-                    position: absolute;
-                    top: 0.75rem;
-                    left: 0.75rem;
-                    background: rgba(0, 0, 0, 0.8);
-                    color: #f9fafb;
-                    padding: 0.25rem 0.5rem;
-                    border-radius: 0.25rem;
-                    font-size: 0.75rem;
-                    text-transform: uppercase;
-                    font-weight: 500;
-                    font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
-                    z-index: 10;
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                    backdrop-filter: blur(4px);
-                  `,f.appendChild(a)}if(!f.querySelector(".copy-button")){let b=document.createElement("button");b.className="copy-button",b.innerHTML=`
+                `})}catch(a){console.warn("Failed to reapply syntax highlighting:",a)}else c||(a.style.cssText=`
+              background-color: #1f2937 !important;
+              color: #f9fafb !important;
+              font-family: 'Fira Code', 'Monaco', 'Consolas', monospace !important;
+              font-size: 0.875rem !important;
+              line-height: 1.5 !important;
+              padding: 1rem !important;
+              border-radius: 0.5rem !important;
+              display: block !important;
+            `);if(f&&h){let b=document.createElement("button");b.className="copy-button",b.innerHTML=`
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              Copy
+            `,b.style.cssText=`
+              position: absolute;
+              top: 0.75rem;
+              right: 0.75rem;
+              background: rgba(0, 0, 0, 0.8);
+              color: #f9fafb;
+              border: 1px solid rgba(255, 255, 255, 0.1);
+              padding: 0.25rem 0.5rem;
+              border-radius: 0.25rem;
+              font-size: 0.75rem;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              gap: 0.25rem;
+              opacity: 1;
+              transition: all 0.2s ease;
+              font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+              z-index: 10;
+              backdrop-filter: blur(4px);
+              font-weight: 500;
+            `,b.addEventListener("click",()=>{navigator.clipboard.writeText(a.textContent||"").then(()=>{b.innerHTML=`
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20,6 9,17 4,12"></polyline>
+                  </svg>
+                  Copied!
+                `,setTimeout(()=>{b.innerHTML=`
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                       <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                     </svg>
                     Copy
-                  `,b.style.cssText=`
-                    position: absolute;
-                    top: 0.75rem;
-                    right: 0.75rem;
-                    background: rgba(0, 0, 0, 0.8);
-                    color: #f9fafb;
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                    padding: 0.25rem 0.5rem;
-                    border-radius: 0.25rem;
-                    font-size: 0.75rem;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    gap: 0.25rem;
-                    opacity: 1;
-                    transition: all 0.2s ease;
-                    font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
-                    z-index: 10;
-                    backdrop-filter: blur(4px);
-                    font-weight: 500;
-                  `,b.addEventListener("click",()=>{navigator.clipboard.writeText(a.textContent||"").then(()=>{b.innerHTML=`
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <polyline points="20,6 9,17 4,12"></polyline>
-                        </svg>
-                        Copied!
-                      `,setTimeout(()=>{b.innerHTML=`
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                          </svg>
-                          Copy
-                        `},2e3)})}),f.appendChild(b)}}}}catch(a){console.warn("Failed to reapply syntax highlighting:",a)}else if(g&&d){if(!d.querySelector(".language-label")&&b){let a=document.createElement("div");a.className="language-label",a.textContent=b.toUpperCase(),a.style.cssText=`
+                  `},2e3)})}),b.addEventListener("mouseenter",()=>{b.style.cssText=`
                 position: absolute;
                 top: 0.75rem;
-                left: 0.75rem;
-                background: rgba(0, 0, 0, 0.8);
+                right: 0.75rem;
+                background: rgba(0, 0, 0, 0.9);
                 color: #f9fafb;
+                border: 1px solid rgba(255, 255, 255, 0.2);
                 padding: 0.25rem 0.5rem;
                 border-radius: 0.25rem;
                 font-size: 0.75rem;
-                text-transform: uppercase;
-                font-weight: 500;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 0.25rem;
+                opacity: 1;
+                transition: all 0.2s ease;
                 font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
                 z-index: 10;
-                border: 1px solid rgba(255, 255, 255, 0.1);
                 backdrop-filter: blur(4px);
-              `,d.appendChild(a)}if(!d.querySelector(".copy-button")){let b=document.createElement("button");b.className="copy-button",b.innerHTML=`
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-                Copy
-              `,b.style.cssText=`
+                font-weight: 500;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+              `}),b.addEventListener("mouseleave",()=>{b.style.cssText=`
                 position: absolute;
                 top: 0.75rem;
                 right: 0.75rem;
@@ -275,17 +281,21 @@ module.exports=[47983,(a,b,c)=>{b.exports=function(a){let b="[A-Za-zА-Яа-яё
                 z-index: 10;
                 backdrop-filter: blur(4px);
                 font-weight: 500;
-              `,b.addEventListener("click",()=>{navigator.clipboard.writeText(a.textContent||"").then(()=>{b.innerHTML=`
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polyline points="20,6 9,17 4,12"></polyline>
-                    </svg>
-                    Copied!
-                  `,setTimeout(()=>{b.innerHTML=`
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                      </svg>
-                      Copy
-                    `},2e3)})}),d.appendChild(b)}}})},100);return()=>{clearInterval(d)}},[a]),(0,b.jsx)("div",{ref:f,className:`blog-content ${d}`,dangerouslySetInnerHTML:{__html:a}})}H.register("javascript",f.default),H.register("typescript",g.default),H.register("python",h.default),H.register("java",i.default),H.register("cpp",j.default),H.register("css",k.default),H.register("html",l.default),H.register("sql",m.default),H.register("json",n.default),H.register("bash",o.default),H.register("php",p.default),H.register("ruby",q.default),H.register("go",r.default),H.register("rust",s.default),H.register("swift",t.default),H.register("kotlin",u.default),H.register("dart",v.default),H.register("r",w.default),H.register("matlab",x.default),H.register("scala",y.default),H.register("clojure",z.default),H.register("haskell",A.default),H.register("lua",B.default),H.register("perl",C.default),H.register("powershell",D.default),H.register("yaml",E.default),H.register("dockerfile",F.default),H.register("markdown",G.default),e.registerLanguage("javascript",f.default),e.registerLanguage("typescript",g.default),e.registerLanguage("python",h.default),e.registerLanguage("java",i.default),e.registerLanguage("cpp",j.default),e.registerLanguage("css",k.default),e.registerLanguage("html",l.default),e.registerLanguage("sql",m.default),e.registerLanguage("json",n.default),e.registerLanguage("bash",o.default),e.registerLanguage("php",p.default),e.registerLanguage("ruby",q.default),e.registerLanguage("go",r.default),e.registerLanguage("rust",s.default),e.registerLanguage("swift",t.default),e.registerLanguage("kotlin",u.default),e.registerLanguage("dart",v.default),e.registerLanguage("r",w.default),e.registerLanguage("matlab",x.default),e.registerLanguage("scala",y.default),e.registerLanguage("clojure",z.default),e.registerLanguage("haskell",A.default),e.registerLanguage("lua",B.default),e.registerLanguage("perl",C.default),e.registerLanguage("powershell",D.default),e.registerLanguage("yaml",E.default),e.registerLanguage("dockerfile",F.default),e.registerLanguage("markdown",G.default)}];
+              `}),f.appendChild(b)}if(f&&i){let a=document.createElement("div");a.className="language-label",a.textContent=c.toUpperCase(),a.style.cssText=`
+              position: absolute;
+              top: 0.75rem;
+              left: 0.75rem;
+              background: rgba(0, 0, 0, 0.8);
+              color: #f9fafb;
+              padding: 0.25rem 0.5rem;
+              border-radius: 0.25rem;
+              font-size: 0.75rem;
+              text-transform: uppercase;
+              font-weight: 500;
+              font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+              z-index: 10;
+              border: 1px solid rgba(255, 255, 255, 0.1);
+              backdrop-filter: blur(4px);
+            `,f.appendChild(a)}})},100);return()=>{clearInterval(d)}},[a]),(0,b.jsx)("div",{ref:f,className:`blog-content ${d}`,dangerouslySetInnerHTML:{__html:a}})}H.register("javascript",f.default),H.register("typescript",g.default),H.register("python",h.default),H.register("java",i.default),H.register("cpp",j.default),H.register("css",k.default),H.register("html",l.default),H.register("sql",m.default),H.register("json",n.default),H.register("bash",o.default),H.register("php",p.default),H.register("ruby",q.default),H.register("go",r.default),H.register("rust",s.default),H.register("swift",t.default),H.register("kotlin",u.default),H.register("dart",v.default),H.register("r",w.default),H.register("matlab",x.default),H.register("scala",y.default),H.register("clojure",z.default),H.register("haskell",A.default),H.register("lua",B.default),H.register("perl",C.default),H.register("powershell",D.default),H.register("yaml",E.default),H.register("dockerfile",F.default),H.register("markdown",G.default),e.registerLanguage("javascript",f.default),e.registerLanguage("typescript",g.default),e.registerLanguage("python",h.default),e.registerLanguage("java",i.default),e.registerLanguage("cpp",j.default),e.registerLanguage("css",k.default),e.registerLanguage("html",l.default),e.registerLanguage("sql",m.default),e.registerLanguage("json",n.default),e.registerLanguage("bash",o.default),e.registerLanguage("php",p.default),e.registerLanguage("ruby",q.default),e.registerLanguage("go",r.default),e.registerLanguage("rust",s.default),e.registerLanguage("swift",t.default),e.registerLanguage("kotlin",u.default),e.registerLanguage("dart",v.default),e.registerLanguage("r",w.default),e.registerLanguage("matlab",x.default),e.registerLanguage("scala",y.default),e.registerLanguage("clojure",z.default),e.registerLanguage("haskell",A.default),e.registerLanguage("lua",B.default),e.registerLanguage("perl",C.default),e.registerLanguage("powershell",D.default),e.registerLanguage("yaml",E.default),e.registerLanguage("dockerfile",F.default),e.registerLanguage("markdown",G.default)}];
 
 //# sourceMappingURL=_e8fdf414._.js.map

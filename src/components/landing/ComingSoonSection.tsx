@@ -89,16 +89,6 @@ export default function ComingSoonSection() {
             </div>
           </div>
           
-          {/* Notify Me Button */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="px-8 py-4 bg-white text-purple-600 font-bold rounded-xl hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg cursor-pointer">
-              Notify Me When Available
-            </button>
-            <button className="px-8 py-4 border-2 border-white text-white font-semibold rounded-xl hover:bg-white hover:text-purple-600 transition-all duration-300 cursor-pointer">
-              Learn More
-            </button>
-          </div>
-          
           {/* Progress Indicator */}
           <div className="mt-12">
             <div className="flex items-center justify-center space-x-4 text-white/80 text-sm">
